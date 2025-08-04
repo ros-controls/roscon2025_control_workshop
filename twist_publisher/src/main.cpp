@@ -9,12 +9,12 @@ extern "C"
 }
 
 // WiFi-specific parameters
-#define SSID "DogHouse"
-#define PASS "29Dakine45"
+#define SSID "your_ssid"
+#define PASS "your_pw"
 
 // Zenoh-specific parameters
 #define MODE "client"
-#define CONNECT "tcp/192.168.9.241:7447"
+#define CONNECT "" // example: tcp/192.168.9.241:7447
 
 #define TWIST_TOPIC "rt/turtle1/cmd_vel"
 
