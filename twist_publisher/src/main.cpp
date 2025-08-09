@@ -2,13 +2,10 @@
 #include <WiFi.h>
 // #define RGB_BUILTIN 48 // RGB pin for esp32-s3-devkitm-1 is GPIO48
 
-extern "C"
-{
 #include <stdio.h>
 #include <stdint.h>
 #include "picoros.h"
 #include "picoserdes.h"
-}
 
 // WiFi-specific parameters
 #define SSID "your_ssid"
@@ -62,13 +59,13 @@ void publish_twist(){
         .angular = angular,
     };
     Serial.printf("Publishing odometery...\n");
-    // size_t len = ps_serialize(pub_buf, &twist, 1024);  // <<<<<------- this is what fails to build
-    // if (len > 0){
-    //     picoros_publish(&pub_log, pub_buf, len);
-    // }
-    // else{
-    //     Serial.printf("Twist message serialization error.");
-    // }
+    size_t len = ps_serialize(pub_buf, &twist, 1024);
+    if (len > 0){
+        picoros_publish(&pub_log, pub_buf, len);
+    }
+    else{
+        Serial.printf("Twist message serialization error.");
+    }
 }
 
 void setup(void)
