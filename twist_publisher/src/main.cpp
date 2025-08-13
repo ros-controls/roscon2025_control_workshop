@@ -59,7 +59,7 @@ void publish_twist(){
         .linear = linear,
         .angular = angular,
     };
-    Serial.printf("Publishing Twist message X[%f]m/sec ...\n", amplitude*sin(float(counter)/divisions));
+    Serial.printf("Publishing Twist message X[%.3f]m/sec ...\n", linear.x);
     size_t len = ps_serialize(pub_buf, &twist, 1024);
     if (len > 0){
         picoros_publish(&pub_log, pub_buf, len);
