@@ -1,11 +1,15 @@
 Please provide us [feedback here](TODO) ## TODO
 
-# ROSCon 2025 ros2_control workshop
+# ROSCon 2025 ros2_control Workshop
 
 ## Docker
 
 ### Prerequisite
 1. Install [docker compose](https://docs.docker.com/compose/install/linux/#install-using-the-repository).
+
+1. On the host computer download and install [VS Code](https://code.visualstudio.com/download)
+
+1. Open VS Code and install the [PlatformIO](https://platformio.org/install/ide?install=vscode) Extension
 
 ### Docker Build
 1. Clone this repo and navigate to the directory `<path of cloned repo>/zehoh_host`
@@ -20,11 +24,9 @@ Please provide us [feedback here](TODO) ## TODO
 1. To open an interactive shell to the running container run: `docker exec -it ros2_control_roscon25 bash`
 
 
-## Task 1: 
+## Task 1:
 
-#### Scenario
-
-#### Running the example
+#### [Sine Wave Twist Publisher](twist_publisher/README.md)
 
 ## Task 2:
 
