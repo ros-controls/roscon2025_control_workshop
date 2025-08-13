@@ -1,6 +1,5 @@
 #include <Arduino.h>
 #include <WiFi.h>
-// #define RGB_BUILTIN 48 // RGB pin for esp32-s3-devkitm-1 is GPIO48
 
 #include <stdio.h>
 #include <stdint.h>
@@ -13,7 +12,7 @@
 
 // Zenoh-specific parameters
 #define MODE "client"
-#define ROUTER_ADDRESS "tcp/192.168.9.241:7447" // example: tcp/192.168.9.241:7447
+#define ROUTER_ADDRESS "tcp/192.168.9.241:7447" // change this to match your ROS 2 host router's ip address
 
 /* ---------- LED Functions ----------- */
 void blinkRGB(int r, int g, int b, int sleep_ms)
@@ -43,22 +42,24 @@ picoros_node_t node = {
 uint8_t pub_buf[1024];
 
 void publish_twist(){
-    // z_clock_t clk = z_clock_now();
+    static uint32_t counter = 0;
+    float amplitude = 1.0;
+    float divisions = 20.0;
     ros_Vector3 linear = {
-        .x = 1.0,
+        .x = amplitude*sin(float(counter)/divisions),
         .y = 0.0,
         .z = 0.0,
     };
     ros_Vector3 angular = {
         .x = 0.0,
         .y = 0.0,
-        .z = 0.5,
+        .z = amplitude*cos(float(counter)/divisions),
     };
     ros_Twist twist = {
         .linear = linear,
         .angular = angular,
     };
-    Serial.printf("Publishing odometery...\n");
+    Serial.printf("Publishing Twist message X[%f]m/sec ...\n", amplitude*sin(float(counter)/divisions));
     size_t len = ps_serialize(pub_buf, &twist, 1024);
     if (len > 0){
         picoros_publish(&pub_log, pub_buf, len);
@@ -66,6 +67,7 @@ void publish_twist(){
     else{
         Serial.printf("Twist message serialization error.");
     }
+    counter++;
 }
 
 void setup(void)
@@ -123,6 +125,5 @@ void setup(void)
 void loop()
 {
     publish_twist();
-    z_sleep_s(1);
-    blinkRGB(0, 255, 0, 100);
+    blinkRGB(0, 100, 0, 100); // sleep for 100 ms and blink the LED Green to let the user know the message went out
 }
