@@ -2,21 +2,22 @@ Please provide us [feedback here](TODO) ## TODO
 
 # ROSCon 2025 ros2_control workshop
 
-## Setup this repository
+## Docker
 
-1. Clone the repository to your existing ROS 2 Jazzy workspace. Either local or docker based workspace.
+### Prerequisite
+1. Install [docker compose](https://docs.docker.com/compose/install/linux/#install-using-the-repository).
 
-1. Import dependencies that need compilation from source using the command:
-   ```
-   vcs import --input roscon2025_control_workshop/roscon2025_control_workshop.repos .
-   ```
+### Docker Build
+1. Clone this repo and navigate to the directory `<path of cloned repo>/zehoh_host`
 
-1. Build container
-   ```
-   docker compose build
-   ```
+1. Build the Docker image with: `docker compose build`
 
-1. Compile the workspace using `colcon`, e.g., `colcon build` executed in the root of the workspace (where `src` folder is located).
+### Docker Run
+1. To run applications that have a GUI inside Docker (i.e. Rviz or Plotjuggler) we have to allow access to the screen by running: `xhost +` on the host PC once per machine startup.
+
+1. To start the container run: `docker compose up -d`
+
+1. To open an interactive shell to the running container run: `docker exec -it ros2_control_roscon25 bash`
 
 
 ## Task 1: 

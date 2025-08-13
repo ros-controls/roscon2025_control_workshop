@@ -1,0 +1,41 @@
+# Docker Compose file for the ros2_control 2025 Workshop
+#
+# Usage:
+#
+# To build the images:
+#   docker compose build
+
+# To start:
+#   docker compose up -d
+#
+# To open an interactive shell to a running container:
+# (You can tab complete to get the container name)
+#   docker exec -it ros2_control_roscon25 bash
+
+services:
+  cpu:
+    image: ros2_control_roscon25:latest
+    container_name: ros2_control_roscon25
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    # Interactive shell
+    stdin_open: true
+    tty: true
+    # Networking and IPC for ROS 2
+    network_mode: host
+    ipc: host
+    privileged: true
+    command: /bin/bash
+    environment:
+      # Default the ROS_DOMAIN_ID to zero for workshop
+      - ROS_DOMAIN_ID=0
+      # Allows graphical programs in the container
+      - DISPLAY=${DISPLAY}
+    volumes:
+      # Allow access to host hardware e.g. micro-controllers
+      - /dev:/dev
+      # Allows graphical programs in the container
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - ${XAUTHORITY:-$HOME/.Xauthority}:/root/.Xauthority
+
