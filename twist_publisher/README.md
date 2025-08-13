@@ -3,8 +3,8 @@
 ### Prerequisite
 1. In VS Code use the `Open Folder` option to navigate to the `twist_publisher` directory
 1. Allow PlatformIO to download `zenoh-pico` into the folder `.pio/libdeps/esp32-s3-devkitm-1/zenoh-pico` (this step happens automatically after you open the folder with the PlatformIO extension enabled)
-1. Clone additional [dependencies](../twist_publisher/platformio.ini#L32-L33) `Pico-ROS` and `Micro-CDR` into the directory `.pio/libdeps/esp32-s3-devkitm-1/`
-1. Update [twist_publisher/src/main.cpp](twist_publisher/src/main.cpp#L10-L15) to match your host's 
+1. Clone additional [dependencies](platformio.ini#L35) `Pico-ROS` and `Micro-CDR` into the directory `.pio/libdeps/esp32-s3-devkitm-1/`
+1. Update [src/main.cpp](src/main.cpp#L10-L15) to match your host's 
 - `ROUTER_ADDRESS` (see note below on running the router on the host)
 - WiFi `SSID`
 - WiFi `PASS`
