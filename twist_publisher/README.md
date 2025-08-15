@@ -26,7 +26,7 @@ You should see something like this in the output
 2025-08-13T14:37:00.271196Z  INFO ThreadId(02) zenoh::net::runtime::orchestrator: Zenoh can be reached at: tcp/192.168.9.241:7447
 ```
 
-3. Follow the `Prerequisite` above and build the project with `Ctrl+Alt+B` then download the code to the device
+3.  Follow the `Prerequisite` above and build the project with `Ctrl+Alt+B` then upload the code to the device with `Ctrl+Alt+U`
 
 4. Once the program starts on the ESP32 the 
 - LED will start blinking Blue to indicate it is connecting to the WiFi
