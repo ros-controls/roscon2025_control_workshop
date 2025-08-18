@@ -23,6 +23,9 @@ RUN apt update && apt install -y \
     ros-$ROS_DISTRO-ros2-control-cmake \
     && rm -rf /var/lib/apt/lists/*
 
+# Replace default zenohd with newer version to fix keepalive issues on picoros.
+# If download doesn't work, use a different mirror from 
+# https://www.eclipse.org/downloads/download.php?file=/zenoh/zenoh/1.5.0/zenoh-1.5.0-x86_64-unknown-linux-gnu-standalone.zip
 WORKDIR /opt/ros/jazzy/lib/rmw_zenoh_cpp/
 ADD https://ftp.snt.utwente.nl/pub/software/eclipse/zenoh/zenoh/1.5.0/zenoh-1.5.0-x86_64-unknown-linux-gnu-standalone.zip .
 RUN mv rmw_zenohd rmw_zenohd.original
