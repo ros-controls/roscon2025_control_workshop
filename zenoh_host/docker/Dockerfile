@@ -23,6 +23,12 @@ RUN apt update && apt install -y \
     ros-$ROS_DISTRO-ros2-control-cmake \
     && rm -rf /var/lib/apt/lists/*
 
+WORKDIR /opt/ros/jazzy/lib/rmw_zenoh_cpp/
+ADD https://ftp.snt.utwente.nl/pub/software/eclipse/zenoh/zenoh/1.5.0/zenoh-1.5.0-x86_64-unknown-linux-gnu-standalone.zip .
+RUN mv rmw_zenohd rmw_zenohd.original
+RUN unzip *.zip
+RUN mv zenohd rmw_zenohd
+
 RUN mkdir -p /root/workshop_ws
 # set working directory to start in
 WORKDIR /root/workshop_ws
