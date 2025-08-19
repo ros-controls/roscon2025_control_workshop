@@ -35,17 +35,19 @@ RUN mv zenohd rmw_zenohd
 # set environment variables
 ENV RMW_IMPLEMENTATION=rmw_zenoh_cpp
 
+## ROS WORKSPACE SETUP
 RUN mkdir -p /root/workshop_ws/src
 # set working directory and copy in the source packages
 WORKDIR /root/workshop_ws/src
 COPY ./wbot_description ./wbot_description
 COPY ./wbot_bringup ./wbot_bringup
+# RUN git clone https://github.com/ros-controls/topic_based_hardware_interfaces
 # pull dependencies
 RUN apt update && apt install -y python3-rosdep && \
   rosdep init && \
   apt update && \
   rosdep update --rosdistro=$ROS_DISTRO && \
-  rosdep install --ignore-src --from-path /root/workshop_ws/src -y && \
+  rosdep install --rosdistro=$ROS_DISTRO --ignore-src --from-path /root/workshop_ws/src -y && \
   rm -rf /var/lib/apt/lists/*
 
 WORKDIR /root/workshop_ws
