@@ -32,9 +32,11 @@ nmcli dev wifi hotspot ssid "ros2_control_workshop_1" password "roscon2025" con-
 
 The access point name and password needs to match what you have set up in the embedded project. We use `SSID` and `PASS` for these and the IP address needs to match what's defined in `ROUTER_ADDRESS`.
 
+
+
 ## Task 1:
 
-#### [Sine Wave Twist Publisher](twist_publisher/README.md)
+#### 
 
 ## Task 2:
 
@@ -44,3 +46,11 @@ The access point name and password needs to match what you have set up in the em
 
 #### Running the example
 
+
+
+
+## Embedded projects:
+
+#### [Sine Wave Twist Publisher](twist_publisher/README.md)
+
+#### [Joint State Publisher](jointstate_publisher/README.md)
