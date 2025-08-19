@@ -48,29 +48,29 @@ void publish_joint_state(){
 
     double positions[] = {amplitude*sin(float(counter)/divisions), amplitude*cos(float(counter)/divisions), 1};
     double velocities[] = {0.5, 0, -0.1};
-    double efforst[] = {0.5, 0, 0.2};
-    const char* names[] = {"joint1", "joint2", "joint3"};
+    double efforts[] = {0.5, 0, 0.2};
+    const char* names[] = {"wbot_wheel_left_joint", "wbot_wheel_right_joint", "arbitrary_made_up_joint"};
     z_clock_t now = z_clock_now();
-    // ros_JointState joint_state = {
-    //     .header = {
-    //         .stamp = {
-    //             .sec = (int32_t)now.tv_sec,
-    //             .nanosec = (uint32_t)now.tv_nsec,
-    //         },
-    //     },
-    //     .name = {.data = (char**)names, .n_elements = 3},
-    //     .position = {.data = positions, .n_elements = 3},
-    //     .velocity = {.data = velocities, .n_elements = 3},
-    //     .effort = {.data = efforst, .n_elements = 3},
-    // };   
-    // Serial.printf("Publishing JointState message [%zu] bytes ...\n", sizeof(joint_state));
-    // size_t len = ps_serialize(pub_buf, &joint_state, 1024);
-    // if (len > 0){
-    //     picoros_publish(&pub_log, pub_buf, len);
-    // }
-    // else{
-    //     Serial.printf("JointState message serialization error.");
-    // }
+    ros_JointState joint_state = {
+        .header = {
+            .stamp = {
+                .sec = (int32_t)now.tv_sec,
+                .nanosec = (uint32_t)now.tv_nsec,
+            },
+        },
+        .name = {.data = (char**)names, .n_elements = 3},
+        .position = {.data = positions, .n_elements = 3},
+        .velocity = {.data = velocities, .n_elements = 3},
+        .effort = {.data = efforts, .n_elements = 3},
+    };
+    Serial.printf("Publishing JointState message [%zu] bytes ...\n", sizeof(joint_state));
+    size_t len = ps_serialize(pub_buf, &joint_state, 1024);
+    if (len > 0){
+        picoros_publish(&pub_log, pub_buf, len);
+    }
+    else{
+        Serial.printf("JointState message serialization error.");
+    }
     counter++;
 }
 
