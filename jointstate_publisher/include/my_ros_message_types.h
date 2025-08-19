@@ -20,6 +20,7 @@
  * CTYPE = Compound type - more members, implemented as struct. FUNC(name, rmw_name, rmw_hash, <fields...>)
  *      FIELD = Field of coumpound type FUNC(type, name)
  *      ARRAY = Array field of coumpound type FUNC(type, name, size)
+ *      SEQUENCE = Variable field length of compound type
  *
  * Each entry in table must have the following format
  * TYPE(                 \  // Can be BTYPE, CTYPE, TTYPE
@@ -31,7 +32,7 @@
  *                          //         wrapped in FIELD() or ARRAY() with no commas between them.
  * note: New lines need to be escaped with \
  */
-#define MSG_LIST(BTYPE, CTYPE, TTYPE, FIELD, ARRAY) \
+#define MSG_LIST(BTYPE, CTYPE, TTYPE, FIELD, ARRAY, SEQUENCE) \
     BTYPE(ros_Int32,                            \
         "example_interfaces::msg::dds_::Int32", \
         "5cd04cd7f3adb9d6c6064c316047b24c76622eb89144f300b536d657fd55e652", \
@@ -83,10 +84,10 @@
         "sensor_msgs::msg::dds_::JointState",   \
         "a13ee3a330e346c9d87b5aa18d24e11690752bd33a0350f11c5882bc9179260e", \
         FIELD(ros_Header, header)               \
-        ARRAY(rstring, name, 2)                 \
-        ARRAY(double, position, 2)              \
-        ARRAY(double, velocity, 2)              \
-        ARRAY(double, effort, 2)                \
+        SEQUENCE(rstring, name)                 \
+        SEQUENCE(double, position)              \
+        SEQUENCE(double, velocity)              \
+        SEQUENCE(double, effort)                \
     )                                           \
     CTYPE(ros_Pose,                             \
         "geometry_msgs::msg::dds_::Pose",       \
@@ -119,43 +120,6 @@
         FIELD(rstring, child_frame_id)          \
         FIELD(ros_PoseWithCovariance, pose)     \
         FIELD(ros_TwistWithCovariance, twist)   \
-    )                                           \
-
-
-/* SRV_LIST(SRV, REQUEST, REPLY, FIELD, ARRAY)
- *
- * User provided list of service types for creating serdes functions
- * SRV = Top level service name, hash and type. FUNC(srv_name, rmw_name, rmw_hash, <request>, <reply>)
- *      REQUEST / REPLY = Request/reply type, implemented as struct. FUNC(<fields...>)
- *          FIELD = Field of request/reply member. FUNC(type, name)
- *          ARRAY = Array field of request/reply member. FUNC(type, name, size)
- *
- * Each entry in table must have the following format
- * SRV(                  \
- *      srv_name,        \  // Name of service type
- *      rmw_name,        \  // Full string name of type used in RMW
- *      rmw_hash,        \  // Type hash string used in RMW
- *      REQUEST(         \
- *          <fields ...> \  // List of fields using FIELD/ARRAY macro with no commas between
- *      )                \
- *      REPLLY(          \
- *          <fields ...> \  // List of fields using FIELD/ARRAY macro with no commas between
- *      )                \
- * )                     \
- * note: New lines need to be escaped with \
- *       Name of generated request/reply types is request_<srv_name> and reply_<srv_name>
- */
-#define SRV_LIST(SRV, REQUEST, REPLY, FIELD, ARRAY)     \
-    SRV(srv_add2Ints,                                   \
-        "example_interfaces::srv::dds_::AddTwoInts",    \
-        "e118de6bf5eeb66a2491b5bda11202e7b68f198d6f67922cf30364858239c81a", \
-        REQUEST(                                        \
-            FIELD(ros_Int64, a)                         \
-            FIELD(ros_Int64, b)                         \
-        ),                                              \
-        REPLY(                                          \
-            FIELD(ros_Int64, sum)                       \
-        )                                               \
     )
 
 #endif /* EXAMPLE_TYPES_H */

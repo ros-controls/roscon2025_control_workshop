@@ -39,4 +39,4 @@ docker exec -it ros2_control_roscon25 bash
 ros2 run plotjuggler plotjuggler
 ```
 
-6. Select `Start` in the Plugjuggler UI and select the `picoros/cmd_vel` topic to listen to and add the `Linear.X` and `Angular.Z` data to the plot
+6. Select `Start` in the Plugjuggler UI and select the `picoros/odom` topic to listen to and add the odom's pose X Y data to the plot

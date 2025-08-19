@@ -27,7 +27,7 @@ void blinkRGB(int r, int g, int b, int sleep_ms)
 // Example Publisher
 picoros_publisher_t pub_log = {
     .topic = {
-        .name = "picoros/joint_state",
+        .name = "picoros/joint_states",
         .type = ROSTYPE_NAME(ros_JointState),
         .rihs_hash = ROSTYPE_HASH(ros_JointState),
     },
@@ -46,41 +46,31 @@ void publish_joint_state(){
     float amplitude = 1.0;
     float divisions = 20.0;
 
-    z_clock_t clk = z_clock_now();
-    ros_Time t = {
-        .sec = clk.tv_sec,
-        .nsec = clk.tv_nsec,
-    };
-    // ros_JointState joint_state;
-    ros_JointState joint_state = {
-        .header = {
-            .stamp = t,
-            .frame_id = "base_link",
-        },
-        .name = {
-            "left_wheel_joint",
-            "right_wheel_joint"
-        },
-        .position = {
-            amplitude*sin(float(counter)/divisions),
-            amplitude*cos(float(counter)/divisions)
-        },
-        .velocity = {
-            0.0, 0.0
-        },
-        .effort = {
-            0.0, 0.0
-        }
-    };
-    
-    Serial.printf("Publishing JointState message [%zu] bytes ...\n", sizeof(joint_state));
-    size_t len = ps_serialize(pub_buf, &joint_state, 1024);
-    if (len > 0){
-        picoros_publish(&pub_log, pub_buf, len);
-    }
-    else{
-        Serial.printf("JointState message serialization error.");
-    }
+    double positions[] = {amplitude*sin(float(counter)/divisions), amplitude*cos(float(counter)/divisions), 1};
+    double velocities[] = {0.5, 0, -0.1};
+    double efforst[] = {0.5, 0, 0.2};
+    const char* names[] = {"joint1", "joint2", "joint3"};
+    z_clock_t now = z_clock_now();
+    // ros_JointState joint_state = {
+    //     .header = {
+    //         .stamp = {
+    //             .sec = (int32_t)now.tv_sec,
+    //             .nanosec = (uint32_t)now.tv_nsec,
+    //         },
+    //     },
+    //     .name = {.data = (char**)names, .n_elements = 3},
+    //     .position = {.data = positions, .n_elements = 3},
+    //     .velocity = {.data = velocities, .n_elements = 3},
+    //     .effort = {.data = efforst, .n_elements = 3},
+    // };   
+    // Serial.printf("Publishing JointState message [%zu] bytes ...\n", sizeof(joint_state));
+    // size_t len = ps_serialize(pub_buf, &joint_state, 1024);
+    // if (len > 0){
+    //     picoros_publish(&pub_log, pub_buf, len);
+    // }
+    // else{
+    //     Serial.printf("JointState message serialization error.");
+    // }
     counter++;
 }
 

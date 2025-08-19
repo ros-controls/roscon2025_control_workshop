@@ -42,10 +42,17 @@ picoros_node_t node = {
 uint8_t pub_buf[1024];
 
 void publish_odometry(){
+    static uint32_t counter = 0;
     z_clock_t clk = z_clock_now();
     ros_Time t = {
         .sec = clk.tv_sec,
         .nsec = clk.tv_nsec,
+    };
+    float amplitude = 1.0;
+    float divisions = 20.0;
+    ros_Vector3 p = {
+        .x = amplitude*sin(float(counter)/divisions),
+        .y = amplitude*cos(float(counter)/divisions)
     };
     ros_Odometry odom = {
         .header = {
@@ -53,6 +60,11 @@ void publish_odometry(){
             .frame_id = "base_link",
         },
         .child_frame_id = "base-link",
+        .pose = {
+            .pose { 
+                .position = p,
+            },
+        },
     };
     printf("Publishing odometery...\n");
     size_t len = ps_serialize(pub_buf, &odom, 1024);
@@ -62,6 +74,7 @@ void publish_odometry(){
     else{
         printf("Odometry message serialization error.");
     }
+    counter++;
 }
 
 void setup(void)

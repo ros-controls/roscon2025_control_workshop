@@ -39,6 +39,6 @@ docker exec -it ros2_control_roscon25 bash
 ros2 run plotjuggler plotjuggler
 ```
 
-6. Select `Start` in the Plugjuggler UI and select the `picoros/cmd_vel` topic to listen to and add the `Linear.X` and `Angular.Z` data to the plot
+6. Select `Start` in the Plugjuggler UI and select the `picoros/joint_states` topic to listen to and add the first two joints position data to the plot
 
-<img src="../docs/picoros_cmd_vel_example_plot.png">
+<img src="../docs/picoros_joint_state_example_plot.png">
