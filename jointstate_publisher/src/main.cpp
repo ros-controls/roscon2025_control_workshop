@@ -7,12 +7,12 @@
 #include "picoserdes.h"
 
 // WiFi-specific parameters
-#define SSID "your_ssid"
-#define PASS "your_pw"
+#define SSID "ros2_control_workshop_1"
+#define PASS "roscon2025"
 
 // Zenoh-specific parameters
 #define MODE "client"
-#define ROUTER_ADDRESS "tcp/192.168.9.241:7447" // change this to match your ROS 2 host router's ip address
+#define ROUTER_ADDRESS "tcp/10.42.0.1:7447" // change this to match your ROS 2 host router's ip address
 
 /* ---------- LED Functions ----------- */
 void blinkRGB(int r, int g, int b, int sleep_ms)
