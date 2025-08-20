@@ -1,4 +1,4 @@
-#### Sine Wave Twist Publisher
+#### Example JointState Publisher
 
 ### Prerequisite
 1. In VS Code use the `Open Folder` option to navigate to the `twist_publisher` directory
