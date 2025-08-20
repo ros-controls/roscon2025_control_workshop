@@ -2,7 +2,7 @@
 <robot name="wbot" xmlns:xacro="http://ros.org/wiki/xacro">
 
   <xacro:macro name="load_wbot" params="
-    prefix:=wbot
+    prefix:=wbot_
     joint_command_topic:=/picoros/joint_commands
     joint_states_topic:=/picoros/joint_states
     mock_hardware:=false">
