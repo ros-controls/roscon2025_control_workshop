@@ -63,7 +63,7 @@ void publish_joint_state(){
         .velocity = {.data = velocities, .n_elements = 3},
         .effort = {.data = efforts, .n_elements = 3},
     };
-    Serial.printf("Publishing JointState message [%zu] bytes ...\n", sizeof(joint_state));
+    Serial.printf("Publishing JointState message number %d ...\n", counter);
     size_t len = ps_serialize(pub_buf, &joint_state, 1024);
     if (len > 0){
         picoros_publish(&pub_log, pub_buf, len);
