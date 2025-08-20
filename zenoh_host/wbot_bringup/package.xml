@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>wbot_bringup</name>
+  <version>0.0.1</version>
+  <description>Bringup package for the 2025 ros2_control workshop</description>
+  <maintainer email="marq.razz@gmail.com">Marq Rasmussen</maintainer>
+  <license>BSD</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <exec_depend>rviz2</exec_depend>
+  <exec_depend>controller_manager</exec_depend>
+  <exec_depend>ros2controlcli</exec_depend>
+  <exec_depend>joint_state_broadcaster</exec_depend>
+  <exec_depend>topic_based_ros2_control</exec_depend>
+  <exec_depend>diff_drive_controller</exec_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

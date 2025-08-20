@@ -23,10 +23,20 @@ Please provide us [feedback here](TODO) ## TODO
 
 1. To open an interactive shell to the running container run: `docker exec -it ros2_control_roscon25 bash`
 
+## WIFI setup
+
+Create and configure access point:
+```
+nmcli dev wifi hotspot ssid "ros2_control_workshop_1" password "roscon2025" con-name "ros2_workshop_ap" && nmcli con modify ros2_workshop_ap ipv4.addresses 10.42.0.1/24 ipv4.method shared && nmcli con up ros2_workshop_ap
+```
+
+The access point name and password needs to match what you have set up in the embedded project. We use `SSID` and `PASS` for these and the IP address needs to match what's defined in `ROUTER_ADDRESS`.
+
+
 
 ## Task 1:
 
-#### [Sine Wave Twist Publisher](twist_publisher/README.md)
+#### 
 
 ## Task 2:
 
@@ -36,3 +46,11 @@ Please provide us [feedback here](TODO) ## TODO
 
 #### Running the example
 
+
+
+
+## Embedded projects:
+
+#### [Sine Wave Twist Publisher](twist_publisher/README.md)
+
+#### [Joint State Publisher](jointstate_publisher/README.md)

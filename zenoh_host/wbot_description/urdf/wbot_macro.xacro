@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<robot name="wbot" xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <xacro:macro name="load_wbot" params="
+    prefix:=wbot_
+    joint_command_topic:=/picoros/joint_commands
+    joint_states_topic:=/picoros/joint_states
+    mock_hardware:=false">
+
+    <!-- Import macros for main hardware components -->
+    <xacro:arg name="namespace" default="${prefix}"/>
+    <xacro:include filename="$(find turtlebot3_description)/urdf/turtlebot3_waffle.urdf"/>
+    <xacro:include filename="$(find wbot_description)/urdf/wbot.ros2_control.xacro"/>
+    <xacro:property name="ros2_control_name" value="wbot_control"/>
+    <xacro:wbot_ros2_control
+      name="${ros2_control_name}"
+      mock_hardware="${mock_hardware}"
+      joint_command_topic="${joint_command_topic}"
+      joint_states_topic="${joint_states_topic}"/> 
+
+  </xacro:macro>
+</robot>

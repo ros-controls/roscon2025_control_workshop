@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<robot name="wbot" xmlns:xacro="http://ros.org/wiki/xacro">
+
+    <!-- Arguments -->
+    <xacro:arg name="prefix" default="wbot_" />
+    <xacro:arg name="mock_hardware" default="true" />
+
+    <!-- Import macros for hardware components -->
+    <xacro:include filename="$(find wbot_description)/urdf/wbot_macro.xacro"/>
+
+    <xacro:load_wbot
+        prefix="$(arg prefix)"
+        mock_hardware="$(arg mock_hardware)"/>
+
+</robot>
