@@ -57,7 +57,7 @@ RUN /bin/bash -c "source /opt/ros/$ROS_DISTRO/setup.bash && colcon build --cmake
 
 # For now we are using the default ROS 2 Jazzy Zenoh router config but we may want to change some option and specify our ouwn config
 # (for exampel if we use serial to talk to the ESP32)
-# ENV ZENOH_SESSION_CONFIG_URI=~/.ros/DEFAULT_RMW_ZENOH_ROUTER_CONFIG.json5
+# ENV ZENOH_ROUTER_CONFIG_URI=~/.ros/DEFAULT_RMW_ZENOH_ROUTER_CONFIG.json5
 # Set up the environment for an interactive terminal.
 RUN echo 'export RCUTILS_CONSOLE_OUTPUT_FORMAT="[{name} {time}]: {message}"' >> /root/.bashrc && \
     echo "export RCUTILS_COLORIZED_OUTPUT=1" >> /root/.bashrc && \
