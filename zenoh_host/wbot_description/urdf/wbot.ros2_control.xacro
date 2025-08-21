@@ -16,7 +16,7 @@
           <param name="calculate_dynamics">true</param>
         </xacro:if>
         <xacro:unless value="${mock_hardware}">
-          <!-- TODO: replace with https://github.com/ros-controls/topic_based_hardware_interfaces/tree/main/joint_state_topic_hardware_interface -->
+          <!-- TODO replace with https://github.com/ros-controls/topic_based_hardware_interfaces/tree/main/joint_state_topic_hardware_interface -->
           <plugin>topic_based_ros2_control/TopicBasedSystem</plugin>
           <param name="joint_commands_topic">${joint_command_topic}</param>
           <param name="joint_states_topic">${joint_states_topic}</param>

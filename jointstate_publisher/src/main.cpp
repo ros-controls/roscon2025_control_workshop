@@ -23,9 +23,20 @@ void blinkRGB(int r, int g, int b, int sleep_ms)
     delay(sleep_ms/2);
 }
 
+void joint_state_callback(uint8_t* rx_data, size_t data_len){
+    ros_JointState js = {};
+    if (ps_deserialize(rx_data, &js, data_len)){
+        printf("New JointState frame:%s @%ds\n",
+            js.header.frame_id, js.header.stamp.sec);
+    }
+    else{
+        printf("JointState message deserialization error\n");
+    }
+}
+
 /* -------------------------------------- */
 // Example Publisher
-picoros_publisher_t pub_log = {
+picoros_publisher_t pub_js = {
     .topic = {
         .name = "picoros/joint_states",
         .type = ROSTYPE_NAME(ros_JointState),
@@ -33,9 +44,18 @@ picoros_publisher_t pub_log = {
     },
 };
 
+picoros_subscriber_t sub_js = {
+    .topic = {
+        .name = "picoros/joint_commands",
+        .type = ROSTYPE_NAME(ros_JointState),
+        .rihs_hash = ROSTYPE_HASH(ros_JointState),
+    },
+    .user_callback = joint_state_callback,
+};
+
 // Example node
 picoros_node_t node = {
-    .name = "picoros_jointstate_pub",
+    .name = "wbot_picoros_node",
 };
 
 // Buffer for publication, used from this thread
@@ -43,13 +63,14 @@ uint8_t pub_buf[1024];
 
 void publish_joint_state(){
     static uint32_t counter = 0;
-    float amplitude = 1.0;
-    float divisions = 20.0;
+    static const float amplitude = 2.0 * M_PI;
+    static const float divisions = 500.0;
+    static const double velocities[] = {0.5, 0, -0.1};
+    static const double efforts[] = {0.5, 0, 0.2};
+    static const char* const names[] = {"wbot_wheel_left_joint", "wbot_wheel_right_joint", "arbitrary_made_up_joint"};
 
-    double positions[] = {amplitude*sin(float(counter)/divisions), amplitude*cos(float(counter)/divisions), 1};
-    double velocities[] = {0.5, 0, -0.1};
-    double efforts[] = {0.5, 0, 0.2};
-    const char* names[] = {"wbot_wheel_left_joint", "wbot_wheel_right_joint", "arbitrary_made_up_joint"};
+    double positions[] = {amplitude*sin(float(counter)/divisions), amplitude*cos(float(counter)/divisions + M_PI/2), 1};
+    
     z_clock_t now = z_clock_now();
     ros_JointState joint_state = {
         .header = {
@@ -60,13 +81,13 @@ void publish_joint_state(){
         },
         .name = {.data = (char**)names, .n_elements = 3},
         .position = {.data = positions, .n_elements = 3},
-        .velocity = {.data = velocities, .n_elements = 3},
-        .effort = {.data = efforts, .n_elements = 3},
+        .velocity = {.data = (double*)velocities, .n_elements = 3},
+        .effort = {.data = (double*)efforts, .n_elements = 3},
     };
-    Serial.printf("Publishing JointState message number %d ...\n", counter);
+    // Serial.printf("Publishing JointState message number %d ...\n", counter);
     size_t len = ps_serialize(pub_buf, &joint_state, 1024);
     if (len > 0){
-        picoros_publish(&pub_log, pub_buf, len);
+        picoros_publish(&pub_js, pub_buf, len);
     }
     else{
         Serial.printf("JointState message serialization error.");
@@ -121,13 +142,15 @@ void setup(void)
     Serial.printf("Starting Pico-ROS node %s domain:%d\n", node.name, node.domain_id);
     picoros_node_init(&node);
 
-    Serial.printf("Declaring publisher on %s\n", pub_log.topic.name);
-    picoros_publisher_declare(&node, &pub_log);
+    Serial.printf("Declaring publisher on %s\n", pub_js.topic.name);
+    picoros_publisher_declare(&node, &pub_js);
+    Serial.printf("Declaring subscriber on %s\n", sub_js.topic.name);
+    picoros_subscriber_declare(&node, &sub_js);
 }
 
 // loop rate is controlled with LED blink sleeping
 void loop()
 {
     publish_joint_state();
-    blinkRGB(0, 100, 0, 100); // sleep for 100 ms and blink the LED Green to let the user know the message went out
+    // blinkRGB(0, 100, 0, 10); // sleep for 10 ms and blink the LED Green to let the user know the message went out
 }

@@ -62,6 +62,7 @@ RUN /bin/bash -c "source /opt/ros/$ROS_DISTRO/setup.bash && colcon build --cmake
 RUN echo 'export RCUTILS_CONSOLE_OUTPUT_FORMAT="[{name} {time}]: {message}"' >> /root/.bashrc && \
     echo "export RCUTILS_COLORIZED_OUTPUT=1" >> /root/.bashrc && \
     echo "source /opt/ros/$ROS_DISTRO/setup.bash" >> /root/.bashrc && \
+    echo "source /root/workshop_ws/install/setup.bash" >> /root/.bashrc && \
     echo "alias sws='source ./install/setup.bash'" >> /root/.bashrc && \
     echo "alias symlink_build='colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release --symlink-install --event-handlers log-'" >> /root/.bashrc
 
