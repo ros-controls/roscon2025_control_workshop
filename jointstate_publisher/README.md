@@ -45,3 +45,8 @@ ros2 launch wbot_bringup wbot.launch.xml mock_hardware:=false
 6. Select `Start` in the Plugjuggler UI and select the `picoros/joint_states` topic to listen to and add the first two joints position data to the plot
 
 <img src="../docs/wb3.gif">
+
+7. On the host open a third interactive terminal to the Workshop container and attempt to teleoperate the robot.
+This will publish a Twist message on the `/cmd_vel` topic which is the same value the `DiffDriveController` is listening to for commands.
+
+ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -p stamped:=true
