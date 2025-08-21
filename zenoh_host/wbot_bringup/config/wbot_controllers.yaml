@@ -1,6 +1,6 @@
 controller_manager:
   ros__parameters:
-    update_rate: 100  # Hz (this should match the ESP32's loop rate)
+    update_rate: 100  # Hz (this can be as fast or slower than the ESP32's loop rate)
 
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster

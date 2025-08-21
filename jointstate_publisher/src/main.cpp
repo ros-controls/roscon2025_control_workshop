@@ -152,5 +152,6 @@ void setup(void)
 void loop()
 {
     publish_joint_state();
+    // uncomment to slow down the control rate.
     // blinkRGB(0, 100, 0, 10); // sleep for 10 ms and blink the LED Green to let the user know the message went out
 }
