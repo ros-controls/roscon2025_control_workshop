@@ -8,7 +8,7 @@
 5. Setup the 99-platformio-udev.rules as per the [instructions](https://docs.platformio.org/en/latest/core/installation/udev-rules.html#platformio-udev-rules)
 `curl -fsSL https://raw.githubusercontent.com/platformio/platformio-core/develop/platformio/assets/system/99-platformio-udev.rules | sudo tee /etc/udev/rules.d/99-platformio-udev.rules`
 `sudo service udev restart`
-6. Update [src/main.cpp](src/main.cpp#L10-L15) to match your host's 
+6. Update [src/main.cpp](src/main.cpp#L10-L15) to match your host's
 - `ROUTER_ADDRESS` (see note below on running the router on the host)
 - WiFi `SSID`
 - WiFi `PASS`
@@ -32,7 +32,7 @@ You should see something like this in the output
 
 3.  Follow the `Prerequisite` above and build the project with `Ctrl+Alt+B` then upload the code to the device with `Ctrl+Alt+U`
 
-4. Once the program starts on the ESP32 the 
+4. Once the program starts on the ESP32 the
 - LED will start blinking Blue to indicate it is connecting to the WiFi
 - Serial message should be printed though PlatformIO's Serial Monitor
 - LED will start blinking Green after it has connected to to the Zenoh host and is publishing messages
