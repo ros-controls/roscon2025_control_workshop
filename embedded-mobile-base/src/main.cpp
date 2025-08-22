@@ -62,7 +62,7 @@ ros_Time last_update_time_{};
 uint8_t pub_buf[1024];
 
 double current_velocity[num_joints] = {0}; // Current joint velocities
-double joint_inertia[num_joints] = {0.01, 0.01, 0.01};
+double joint_inertia[num_joints] = {0.05, 0.05, 0.05};
 double friction_coeff[num_joints] = {0.1, 0.1, 0.1};
 const double VELOCITY_CONTROL_P_GAIN = 5.0;
 
@@ -163,6 +163,18 @@ void execute_commands_and_update_robot_state() {
     // Update desired position for each joint with physics
     noInterrupts();
     for (int i = 0; i < num_joints; ++i) {
+        // Dead zone: if commanded velocity is near zero AND current velocity is small, stop completely
+        if (abs(cmd_vel[i]) < 0.01 && abs(current_velocity[i]) < 0.05) {
+            current_velocity[i] = 0.0;
+            // Don't update position - keep it exactly where it is
+            continue;
+        }
+        
+        // Safety check for valid values
+        if (isnan(current_velocity[i])) {
+            current_velocity[i] = 0.0;
+        }
+        
         // Calculate velocity error
         double velocity_error = cmd_vel[i] - current_velocity[i];
         
@@ -175,7 +187,7 @@ void execute_commands_and_update_robot_state() {
         // Total force
         double total_force = control_force + friction_force;
         
-        // Calculate acceleration from force and inertia (F = ma, so a = F/m)
+        // Calculate acceleration from force and inertia
         double acceleration = total_force / joint_inertia[i];
         
         // Update velocity with acceleration
