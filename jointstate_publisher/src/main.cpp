@@ -121,7 +121,8 @@ void joint_state_callback(uint8_t * rx_data, size_t data_len)
   double joint_efforts[num_joints] = {};
 
   // Create the JointState message and initialize it with the desired array sizes
-  // ros2_control HW interface is only sending each joint a velocity command
+  // ros2_control HW interface is only sending each joint a velocity command because
+  // this example is paired with a diff drive controller.
   ros_JointState js = {
     .name = {.data = joint_names, .n_elements = num_joints},
     .position = {.data = joint_positions, .n_elements = 0},
@@ -168,7 +169,6 @@ void publish_joint_state()
     .velocity = {.data = velocities, .n_elements = 3},
     .effort = {.data = (double *)efforts, .n_elements = 3},
   };
-  // Serial.printf("Publishing JointState message number %d ...\n", counter);
   size_t len = ps_serialize(pub_buf, &joint_state, 1024);
   if (len > 0)
   {
@@ -202,7 +202,7 @@ void setup(void)
     blockingBlinkRGB(200, 165, 0, 1000);
   } while (!Serial);
 
-  Serial.printf("Connecting to WiFi %s!\n", SSID);
+  Serial.printf("Connecting to WiFi:[%s]!\n", SSID);
   // Set WiFi in STA mode and trigger attachment
   WiFi.mode(WIFI_STA);
   WiFi.begin(SSID, PASS);
@@ -210,7 +210,7 @@ void setup(void)
   {  // blink the LED Blue to signal we are connecting to WiFi
     blockingBlinkRGB(0, 0, 255, 500);
   }
-  Serial.printf("Connected to WiFi [%s] with address [%s]\n", SSID, WiFi.localIP().toString());
+  Serial.printf("Connected to WiFi:[%s] with address:[%s]\n", SSID, WiFi.localIP().toString());
   // Hold Blue solid indicating success
   neopixelWrite(RGB_BUILTIN, 0, 0, 255);
   delay(2000);
@@ -222,7 +222,7 @@ void setup(void)
     .locator = ROUTER_ADDRESS,
   };
 
-  Serial.printf("Starting pico-ros interface %s %s\n", ifx.mode, ifx.locator);
+  Serial.printf("Starting pico-ros interface:[%s] on router address:[%s]\n", ifx.mode, ifx.locator);
   while (picoros_interface_init(&ifx) == PICOROS_NOT_READY)
   {
     printf("Waiting RMW init...\n");
@@ -231,14 +231,14 @@ void setup(void)
     z_sleep_ms(1);
   }
 
-  Serial.printf("Starting Pico-ROS node %s domain:%d\n", node.name, node.domain_id);
+  Serial.printf("Starting Pico-ROS node:[%s] domain:[%d]\n", node.name, node.domain_id);
   picoros_node_init(&node);
 
   initialize_desired_positions();
 
-  Serial.printf("Declaring publisher on %s\n", pub_js.topic.name);
+  Serial.printf("Declaring publisher on [%s]\n", pub_js.topic.name);
   picoros_publisher_declare(&node, &pub_js);
-  Serial.printf("Declaring subscriber on %s\n", sub_js.topic.name);
+  Serial.printf("Declaring subscriber on [%s]\n", sub_js.topic.name);
   picoros_subscriber_declare(&node, &sub_js);
 }
 
