@@ -72,12 +72,16 @@ void update_desired_positions() {
     // Calculate time difference in seconds
     double dt = (current_time_.sec - last_update_time_.sec) +
                 (current_time_.nanosec - last_update_time_.nanosec) / 1e9;
+    // TODO: why does dt randomly compute to a value of ~4.3?    
+    if (dt > 0.05){
+        // Serial.printf("dt:[%.3f]\n", dt);
+        dt = 0.01;
+    }
 
     // Update desired position for each joint
     for (int i = 0; i < num_joints; ++i) {
         desired_position[i] += cmd_vel[i] * dt;
         // Normalize the position to a range of [-pi, pi]
-        // The fmod() function is used for floating-point modulo
         desired_position[i] = fmod(desired_position[i] + M_PI, 2.0 * M_PI);
         if (desired_position[i] < 0) {
             desired_position[i] += 2.0 * M_PI;
