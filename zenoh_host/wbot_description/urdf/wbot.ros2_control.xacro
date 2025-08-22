@@ -21,6 +21,7 @@
           <param name="joint_commands_topic">${joint_command_topic}</param>
           <param name="joint_states_topic">${joint_states_topic}</param>
           <param name="sum_wrapped_joint_states">true</param>
+          <param name="trigger_joint_command_threshold">-1</param> <!-- always publish commands on the topic -->
         </xacro:unless>
       </hardware>
       <joint name="wbot_wheel_left_joint">

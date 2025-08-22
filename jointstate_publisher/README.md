@@ -42,11 +42,17 @@ docker exec -it ros2_control_roscon25 bash
 ros2 launch wbot_bringup wbot.launch.xml mock_hardware:=false
 ```
 
-6. Select `Start` in the Plugjuggler UI and select the `picoros/joint_states` topic to listen to and add the first two joints position data to the plot
+6. Select `Start` in the Plugjuggler UI and select the `picoros/joint_states` topic to listen to and add the first two joints position data to the plot.
+You can also load the pre-configured layout included in [wbot_bringup](/zenoh_host/wbot_bringup/wbot_plotjuggler.xml)
 
 <img src="../docs/wb3.gif">
 
 7. On the host open a third interactive terminal to the Workshop container and attempt to teleoperate the robot.
 This will publish a Twist message on the `/cmd_vel` topic which is the same value the `DiffDriveController` is listening to for commands.
 
+```bash
 ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -p stamped:=true
+```
+
+<img src="../docs/wb3_teleop.gif">
+
