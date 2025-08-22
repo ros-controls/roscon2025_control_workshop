@@ -85,27 +85,31 @@ unsigned long last_update_time_ms = 0;
 uint8_t pub_buf[1024];
 
 // This function calculates joints positions given the current velocity commands.
-void update_desired_positions() {
-    noInterrupts(); // Begin critical section
-    
-    current_time_ms = millis();
-    double dt = (double)(current_time_ms - last_update_time_ms) / 1000.0;
-    last_update_time_ms = current_time_ms;
-    
-    // Update desired position for each joint
-    for (int i = 0; i < num_joints; ++i) {
-        desired_position[i] += cmd_vel[i] * dt;
-        
-        // Normalize the position to a range of [-pi, pi]
-        desired_position[i] = fmod(desired_position[i], 2.0 * M_PI);
-        if (desired_position[i] > M_PI) {
-            desired_position[i] -= 2.0 * M_PI;
-        }
-        if (desired_position[i] < -M_PI) {
-            desired_position[i] += 2.0 * M_PI;
-        }
+void update_desired_positions()
+{
+  noInterrupts();  // Begin critical section
+
+  current_time_ms = millis();
+  double dt = (double)(current_time_ms - last_update_time_ms) / 1000.0;
+  last_update_time_ms = current_time_ms;
+
+  // Update desired position for each joint
+  for (int i = 0; i < num_joints; ++i)
+  {
+    desired_position[i] += cmd_vel[i] * dt;
+
+    // Normalize the position to a range of [-pi, pi]
+    desired_position[i] = fmod(desired_position[i], 2.0 * M_PI);
+    if (desired_position[i] > M_PI)
+    {
+      desired_position[i] -= 2.0 * M_PI;
     }
-    interrupts(); // End critical section
+    if (desired_position[i] < -M_PI)
+    {
+      desired_position[i] += 2.0 * M_PI;
+    }
+  }
+  interrupts();  // End critical section
 }
 
 void joint_state_callback(uint8_t * rx_data, size_t data_len)
@@ -176,13 +180,15 @@ void publish_joint_state()
   }
 }
 
-void initialize_desired_positions() {
-    for (int i = 0; i < num_joints; ++i) {
-        desired_position[i] = 0.0;
-        cmd_vel[i] = 0.0;
-    }
-    // Set the initial last_update_time_ms to the current time
-    last_update_time_ms = millis();
+void initialize_desired_positions()
+{
+  for (int i = 0; i < num_joints; ++i)
+  {
+    desired_position[i] = 0.0;
+    cmd_vel[i] = 0.0;
+  }
+  // Set the initial last_update_time_ms to the current time
+  last_update_time_ms = millis();
 }
 
 void setup(void)
