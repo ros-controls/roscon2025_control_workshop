@@ -78,45 +78,34 @@ static const int num_joints = 3;
 volatile double cmd_vel[num_joints];
 // the calculated desired position for the joints given the velocity command
 volatile double desired_position[num_joints];
-ros_Time current_time_{};
-ros_Time last_update_time_{};
+// Variables to hold time in milliseconds
+unsigned long current_time_ms = 0;
+unsigned long last_update_time_ms = 0;
 // Buffer for publication, used from this thread
 uint8_t pub_buf[1024];
 
-// This function calculated the joints position given the current velocity command.
-void update_desired_positions()
-{
-  noInterrupts();
-  z_clock_t now = z_clock_now();
-  current_time_ = {
-    .sec = now.tv_sec,
-    .nanosec = (uint32_t)now.tv_nsec,
-  };
-
-  // Calculate time difference in seconds
-  double dt = (current_time_.sec - last_update_time_.sec) +
-              (current_time_.nanosec - last_update_time_.nanosec) / 1e9;
-  // TODO: why does dt randomly compute to a value of ~4.3?
-  if (dt > 0.05)
-  {
-    // Serial.printf("dt:[%.3f]\n", dt);
-    dt = 0.01;
-  }
-
-  // Update desired position for each joint
-  for (int i = 0; i < num_joints; ++i)
-  {
-    desired_position[i] += cmd_vel[i] * dt;
-    // Normalize the position to a range of [-pi, pi]
-    desired_position[i] = fmod(desired_position[i] + M_PI, 2.0 * M_PI);
-    if (desired_position[i] < 0)
-    {
-      desired_position[i] += 2.0 * M_PI;
+// This function calculates joints positions given the current velocity commands.
+void update_desired_positions() {
+    noInterrupts(); // Begin critical section
+    
+    current_time_ms = millis();
+    double dt = (double)(current_time_ms - last_update_time_ms) / 1000.0;
+    last_update_time_ms = current_time_ms;
+    
+    // Update desired position for each joint
+    for (int i = 0; i < num_joints; ++i) {
+        desired_position[i] += cmd_vel[i] * dt;
+        
+        // Normalize the position to a range of [-pi, pi]
+        desired_position[i] = fmod(desired_position[i], 2.0 * M_PI);
+        if (desired_position[i] > M_PI) {
+            desired_position[i] -= 2.0 * M_PI;
+        }
+        if (desired_position[i] < -M_PI) {
+            desired_position[i] += 2.0 * M_PI;
+        }
     }
-    desired_position[i] -= M_PI;
-  }
-  last_update_time_ = current_time_;  // Update last_update_time for the next iteration
-  interrupts();
+    interrupts(); // End critical section
 }
 
 void joint_state_callback(uint8_t * rx_data, size_t data_len)
@@ -187,19 +176,13 @@ void publish_joint_state()
   }
 }
 
-void initialize_desired_positions()
-{
-  for (int i = 0; i < num_joints; ++i)
-  {
-    desired_position[i] = 0.0;  // Start at zero
-    cmd_vel[i] = 0.0;
-  }
-  z_clock_t now = z_clock_now();
-  current_time_ = {
-    .sec = (int32_t)now.tv_sec,
-    .nanosec = (uint32_t)now.tv_nsec,
-  };
-  last_update_time_ = current_time_;
+void initialize_desired_positions() {
+    for (int i = 0; i < num_joints; ++i) {
+        desired_position[i] = 0.0;
+        cmd_vel[i] = 0.0;
+    }
+    // Set the initial last_update_time_ms to the current time
+    last_update_time_ms = millis();
 }
 
 void setup(void)
