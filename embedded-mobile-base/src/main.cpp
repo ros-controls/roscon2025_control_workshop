@@ -66,6 +66,83 @@ double joint_inertia[num_joints] = {0.01, 0.01, 0.01};
 double friction_coeff[num_joints] = {0.1, 0.1, 0.1};
 const double VELOCITY_CONTROL_P_GAIN = 5.0;
 
+void update_led_based_on_velocity(double velocity_left, double velocity_right) {
+    // Calculate motion characteristics
+    double avg_vel = (velocity_left + velocity_right) / 2.0;      // Average velocity (forward/backward)
+    double diff_vel = velocity_left - velocity_right;             // Velocity difference (turning)
+    
+    // Thresholds
+    const double min_vel = 0.05;               // Minimum velocity to consider "moving"
+    const double max_vel = 2.0;                // Maximum expected velocity for scaling
+    const double turn_threshold = 0.1;         // Minimum difference to consider "turning"
+    
+    // Check if robot is essentially stopped
+    if (abs(avg_vel) < min_vel && abs(diff_vel) < turn_threshold) {
+        // Robot stopped - turn off LED
+        neopixelWrite(RGB_BUILTIN, 0, 0, 0);
+        return;
+    }
+    
+    // Initialize RGB values
+    int red = 0, green = 0, blue = 0;
+    
+    // Check if mainly driving straight (forward/backward)
+    if (abs(diff_vel) < turn_threshold) {
+        // Driving straight - use RED proportional to speed
+        int intensity = (int)(abs(avg_vel) / max_vel * 255.0);
+        intensity = constrain(intensity, 0, 255);
+        red = intensity;
+    }
+    // Check if mainly turning in place
+    else if (abs(avg_vel) < min_vel) {
+        // Pure turning
+        int intensity = (int)(abs(diff_vel) / max_vel * 255.0);
+        intensity = constrain(intensity, 0, 255);
+        
+        if (diff_vel > 0) {
+            // Turning left - BLUE
+            blue = intensity;
+        } else {
+            // Turning right - GREEN
+            green = intensity;
+        }
+    }
+    // Arc movement - mix colors
+    else {
+        // Calculate base intensities
+        int forward_intensity = (int)(abs(avg_vel) / max_vel * 255.0);
+        int turn_intensity = (int)(abs(diff_vel) / max_vel * 255.0);
+        
+        forward_intensity = constrain(forward_intensity, 0, 255);
+        turn_intensity = constrain(turn_intensity, 0, 255);
+        
+        // Mix red (forward/backward) with turn color
+        red = forward_intensity;
+        
+        if (diff_vel > 0) {
+            // Arc left - mix RED + BLUE
+            blue = turn_intensity;
+        } else {
+            // Arc right - mix RED + GREEN  
+            green = turn_intensity;
+        }
+        
+        // Scale down to prevent oversaturation
+        double scale = 1.0;
+        int max_component = max(red, max(green, blue));
+        if (max_component > 255) {
+            scale = 255.0 / max_component;
+        }
+        
+        red = (int)(red * scale);
+        green = (int)(green * scale);
+        blue = (int)(blue * scale);
+    }
+    
+    // Update the LED
+    neopixelWrite(RGB_BUILTIN, red, green, blue);
+}
+
 void execute_commands_and_update_robot_state() {
     z_clock_t now = z_clock_now();
     current_time_ = {
