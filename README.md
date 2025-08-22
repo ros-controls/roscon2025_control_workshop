@@ -36,7 +36,7 @@ The access point name and password needs to match what you have set up in the em
 
 ## Task 1:
 
-#### 
+####
 
 ## Task 2:
 
