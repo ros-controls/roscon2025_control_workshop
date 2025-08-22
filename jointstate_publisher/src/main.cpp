@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <math.h> // For fmod() and M_PI
 #include "picoros.h"
 #include "picoserdes.h"
 
@@ -15,7 +16,22 @@
 #define ROUTER_ADDRESS "tcp/10.42.0.1:7447" // change this to match your ROS 2 host router's ip address
 
 /* ---------- LED Functions ----------- */
-void blinkRGB(int r, int g, int b, int sleep_ms)
+unsigned long previousBlinkMillis = 0;
+bool ledState = false;
+void nonBlockingBlink(int r, int g, int b, unsigned long interval)
+{
+    if (millis() - previousBlinkMillis >= interval) {
+        previousBlinkMillis = millis();
+        ledState = !ledState;
+        if (ledState) {
+            neopixelWrite(RGB_BUILTIN, r, g, b);
+        } else {
+            neopixelWrite(RGB_BUILTIN, 0, 0, 0);
+        }
+    }
+}
+
+void blockingBlinkRGB(int r, int g, int b, int sleep_ms)
 {
     neopixelWrite(RGB_BUILTIN, r, g, b);
     delay(sleep_ms/2);
@@ -171,7 +187,7 @@ void setup(void)
     Serial.begin(115200);
     do
     {// blink the LED Orange to signal start of the program
-        blinkRGB(200, 165, 0, 1000);
+        blockingBlinkRGB(200, 165, 0, 1000);
     } while (!Serial);
 
     Serial.printf("Connecting to WiFi %s!\n", SSID);
@@ -180,7 +196,7 @@ void setup(void)
     WiFi.begin(SSID, PASS);
     while (WiFi.status() != WL_CONNECTED)
     {// blink the LED Blue to signal we are connecting to WiFi
-      blinkRGB(0, 0, 255, 500);
+      blockingBlinkRGB(0, 0, 255, 500);
     }
     Serial.printf("Connected to WiFi [%s] with address [%s]\n", SSID, WiFi.localIP().toString());
     // Hold Blue solid indicating success
@@ -198,7 +214,7 @@ void setup(void)
     while (picoros_interface_init(&ifx) == PICOROS_NOT_READY){
         printf("Waiting RMW init...\n");
         // Blink LED Red to signal we are waiting for RMW router
-        blinkRGB(255, 0, 0, 1000);
+        blockingBlinkRGB(255, 0, 0, 1000);
         z_sleep_ms(1);
     }
 
@@ -213,10 +229,18 @@ void setup(void)
     picoros_subscriber_declare(&node, &sub_js);
 }
 
-// loop rate is controlled by topic pub-sub & LED blink if desired
+// Variables to control loop rate
+unsigned long previousLoopMillis = 0;
+const unsigned long loopInterval = 4; // Run loop logic every 4ms (250 Hz)
 void loop()
 {
-    publish_joint_state();
-    // uncomment to slow down the control rate.
-    // blinkRGB(0, 100, 0, 10); // sleep for 10 ms and blink the LED Green to let the user know the message went out
+    // Trigger publisher and LED at desired rate
+    if (millis() - previousLoopMillis >= loopInterval) {
+        previousLoopMillis = millis();
+        // Publish the current state
+        publish_joint_state();
+        
+        // Blink the LED without blocking
+        nonBlockingBlink(0, 100, 0, 100); // Green blink every 100ms
+    }
 }
