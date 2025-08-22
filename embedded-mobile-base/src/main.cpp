@@ -163,16 +163,22 @@ void execute_commands_and_update_robot_state() {
     // Update desired position for each joint with physics
     noInterrupts();
     for (int i = 0; i < num_joints; ++i) {
+        // Safety check for valid values - fix any NaNs immediately
+        if (isnan(current_velocity[i])) {
+            current_velocity[i] = 0.0;
+        }
+        if (isnan(desired_position[i])) {
+            desired_position[i] = 0.0;
+        }
+        if (isnan(cmd_vel[i])) {
+            cmd_vel[i] = 0.0;
+        }
+        
         // Dead zone: if commanded velocity is near zero AND current velocity is small, stop completely
         if (abs(cmd_vel[i]) < 0.01 && abs(current_velocity[i]) < 0.05) {
             current_velocity[i] = 0.0;
             // Don't update position - keep it exactly where it is
             continue;
-        }
-        
-        // Safety check for valid values
-        if (isnan(current_velocity[i])) {
-            current_velocity[i] = 0.0;
         }
         
         // Calculate velocity error
@@ -196,18 +202,27 @@ void execute_commands_and_update_robot_state() {
         // Update position with current velocity
         desired_position[i] += current_velocity[i] * dt;
         
+        // Safety check before normalization
+        if (isnan(desired_position[i])) {
+            desired_position[i] = 0.0;
+        }
+        
         // Normalize the position to a range of [-pi, pi]
         desired_position[i] = fmod(desired_position[i] + M_PI, 2.0 * M_PI);
         if (desired_position[i] < 0) {
             desired_position[i] += 2.0 * M_PI;
         }
         desired_position[i] -= M_PI;
+        
+        // Final safety check after normalization
+        if (isnan(desired_position[i])) {
+            desired_position[i] = 0.0;
+        }
     }
     interrupts();
     
     last_update_time_ = current_time_;
 }
-
 void joint_state_callback(uint8_t* rx_data, size_t data_len){
     // Define arrays to hold the data
     char* joint_names[num_joints] = {};
