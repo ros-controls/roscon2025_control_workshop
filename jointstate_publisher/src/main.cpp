@@ -52,9 +52,9 @@ picoros_node_t node = {
 
 static const int num_joints = 3;
 // the latest velocity command from the subscriber
-double cmd_vel[num_joints];
+volatile double cmd_vel[num_joints];
 // the calculated desired position for the joints given the velocity command
-double desired_position[num_joints];
+volatile double desired_position[num_joints];
 ros_Time current_time_{};
 ros_Time last_update_time_{};
 // Buffer for publication, used from this thread
@@ -62,9 +62,10 @@ uint8_t pub_buf[1024];
 
 // This function calculated the joints position given the current velocity command.
 void update_desired_positions() {
+    noInterrupts();
     z_clock_t now = z_clock_now();
     current_time_ = {
-        .sec = (int32_t)now.tv_sec,
+        .sec = now.tv_sec,
         .nanosec = (uint32_t)now.tv_nsec,
     };
 
@@ -73,7 +74,6 @@ void update_desired_positions() {
                 (current_time_.nanosec - last_update_time_.nanosec) / 1e9;
 
     // Update desired position for each joint
-    noInterrupts();
     for (int i = 0; i < num_joints; ++i) {
         desired_position[i] += cmd_vel[i] * dt;
         // Normalize the position to a range of [-pi, pi]
@@ -84,8 +84,8 @@ void update_desired_positions() {
         }
         desired_position[i] -= M_PI;
     }
-    interrupts();
     last_update_time_ = current_time_; // Update last_update_time for the next iteration
+    interrupts();
 }
 
 void joint_state_callback(uint8_t* rx_data, size_t data_len){
