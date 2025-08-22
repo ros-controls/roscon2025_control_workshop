@@ -4,7 +4,7 @@
 1. In VS Code use the `Open Folder` option to navigate to the `twist_publisher` directory
 1. Allow PlatformIO to download `zenoh-pico` into the folder `.pio/libdeps/esp32-s3-devkitm-1/zenoh-pico` (this step happens automatically after you open the folder with the PlatformIO extension enabled)
 1. Clone additional [dependencies](platformio.ini#L35) `Pico-ROS` and `Micro-CDR` into the directory `.pio/libdeps/esp32-s3-devkitm-1/`
-1. Set up the local wifi access point 
+1. Set up the local wifi access point
 Create and configure access point:
 ```
 nmcli dev wifi hotspot ssid "ros2_control_workshop_1" password "roscon2025" con-name "ros2_workshop_ap" && nmcli con modify ros2_workshop_ap ipv4.addresses 10.42.0.1/24 ipv4.method shared && nmcli con up ros2_workshop_ap
@@ -31,7 +31,7 @@ You should see something like this in the output
 
 3. Follow the `Prerequisite` above and build the project with `Ctrl+Alt+B` then download the code to the device
 
-4. Once the program starts on the ESP32 the 
+4. Once the program starts on the ESP32 the
 - LED will start blinking Blue to indicate it is connecting to the WiFi
 - Serial message should be printed though PlatformIO's Serial Monitor
 - LED will start blinking Green after it has connected to to the Zenoh host and is publishing messages
@@ -55,4 +55,3 @@ ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -p stamped:=true
 ```
 
 <img src="../docs/wb3_teleop.gif">
-

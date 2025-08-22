@@ -58,3 +58,4 @@ repos:
         args: ['--write-changes', '--uri-ignore-words-list=ist', '-L manuel']
         exclude: CHANGELOG\.rst|\.(svg|pyc|drawio)$
 
+exclude: 'wbot_plotjuggler.xml'
