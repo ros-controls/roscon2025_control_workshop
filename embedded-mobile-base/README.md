@@ -1,7 +1,7 @@
 #### Example JointState Publisher
 
 ### Prerequisite
-1. In VS Code use the `Open Folder` option to navigate to the `twist_publisher` directory
+1. In VS Code use the `Open Folder` option to navigate to the `embedded-mobile-base` directory
 1. Allow PlatformIO to download `zenoh-pico` into the folder `.pio/libdeps/esp32-s3-devkitm-1/zenoh-pico` (this step happens automatically after you open the folder with the PlatformIO extension enabled)
 1. Clone additional [dependencies](platformio.ini#L35) `Pico-ROS` and `Micro-CDR` into the directory `.pio/libdeps/esp32-s3-devkitm-1/`
 1. Set up the local wifi access point
@@ -27,6 +27,7 @@ ros2 run rmw_zenoh_cpp rmw_zenohd
 You should see something like this in the output
 ```
 2025-08-13T14:37:00.271196Z  INFO ThreadId(02) zenoh::net::runtime::orchestrator: Zenoh can be reached at: tcp/192.168.9.241:7447
+2025-08-13T14:37:00.322196Z  INFO ThreadId(02) zenoh::net::runtime::orchestrator: Zenoh can be reached at: tcp/10.42.0.1:7447
 ```
 
 3. Follow the `Prerequisite` above and build the project with `Ctrl+Alt+B` then download the code to the device
@@ -55,3 +56,5 @@ ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -p stamped:=true
 ```
 
 <img src="../docs/wb3_teleop.gif">
+
+8. The ESP32's RGB LED will now change colours according to the latest driving command.
