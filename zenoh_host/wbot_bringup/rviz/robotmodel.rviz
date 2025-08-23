@@ -3,9 +3,11 @@ Panels:
     Help Height: 0
     Name: Displays
     Property Tree Widget:
-      Expanded: ~
+      Expanded:
+        - /Odometry1
+        - /Odometry1/Shape1
       Splitter Ratio: 0.5959302186965942
-    Tree Height: 744
+    Tree Height: 1295
 Visualization Manager:
   Class: ""
   Displays:
@@ -128,6 +130,45 @@ Visualization Manager:
         {}
       Update Interval: 0
       Value: false
+    - Angle Tolerance: 0.10000000149011612
+      Class: rviz_default_plugins/Odometry
+      Covariance:
+        Orientation:
+          Alpha: 0.5
+          Color: 255; 255; 127
+          Color Style: Unique
+          Frame: Local
+          Offset: 1
+          Scale: 1
+          Value: true
+        Position:
+          Alpha: 0.30000001192092896
+          Color: 204; 51; 204
+          Scale: 1
+          Value: true
+        Value: true
+      Enabled: true
+      Keep: 100
+      Name: Odometry
+      Position Tolerance: 0.10000000149011612
+      Shape:
+        Alpha: 1
+        Axes Length: 0.10000000149011612
+        Axes Radius: 0.009999999776482582
+        Color: 255; 25; 0
+        Head Length: 0.30000001192092896
+        Head Radius: 0.10000000149011612
+        Shaft Length: 1
+        Shaft Radius: 0.05000000074505806
+        Value: Axes
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        Filter size: 10
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /odom
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 255; 255; 255
@@ -149,33 +190,33 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 1.9995650053024292
+      Distance: 2.855001449584961
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -0.03634152188897133
-        Y: -0.1406855583190918
-        Z: -0.06542904675006866
+        X: 0.43092116713523865
+        Y: -0.8159342408180237
+        Z: 0.13075415790081024
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.49979734420776367
+      Pitch: 0.5247973203659058
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 0.5872700214385986
+      Yaw: 0.6472691893577576
     Saved: ~
 Window Geometry:
   Displays:
-    collapsed: false
-  Height: 889
-  Hide Left Dock: false
+    collapsed: true
+  Height: 1419
+  Hide Left Dock: true
   Hide Right Dock: false
-  QMainWindow State: 000000ff00000000fd00000001000000000000015a00000323fc0200000001fb000000100044006900730070006c006100790073010000003b00000323000000c700ffffff000003a20000032300000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
-  Width: 1282
-  X: 93
-  Y: 510
+  QMainWindow State: 000000ff00000000fd00000001000000000000015a0000054afc0200000001fb000000100044006900730070006c006100790073000000003b0000054a000000c700ffffff0000027e0000053500000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  Width: 638
+  X: 1280
+  Y: 0
