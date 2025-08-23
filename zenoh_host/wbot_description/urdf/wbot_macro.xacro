@@ -16,7 +16,7 @@
       name="${ros2_control_name}"
       mock_hardware="${mock_hardware}"
       joint_command_topic="${joint_command_topic}"
-      joint_states_topic="${joint_states_topic}"/> 
+      joint_states_topic="${joint_states_topic}"/>
 
   </xacro:macro>
 </robot>

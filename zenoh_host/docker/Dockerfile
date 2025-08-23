@@ -25,7 +25,7 @@ RUN apt update && apt install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Replace default zenohd with newer version to fix keepalive issues on picoros.
-# If download doesn't work, use a different mirror from 
+# If download doesn't work, use a different mirror from
 # https://www.eclipse.org/downloads/download.php?file=/zenoh/zenoh/1.5.0/zenoh-1.5.0-x86_64-unknown-linux-gnu-standalone.zip
 WORKDIR /opt/ros/jazzy/lib/rmw_zenoh_cpp/
 ADD https://ftp.snt.utwente.nl/pub/software/eclipse/zenoh/zenoh/1.5.0/zenoh-1.5.0-x86_64-unknown-linux-gnu-standalone.zip .
@@ -56,12 +56,13 @@ WORKDIR /root/workshop_ws
 RUN /bin/bash -c "source /opt/ros/$ROS_DISTRO/setup.bash && colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release --symlink-install"
 
 # For now we are using the default ROS 2 Jazzy Zenoh router config but we may want to change some option and specify our ouwn config
-# (for exampel if we use serial to talk to the ESP32)
-# ENV ZENOH_SESSION_CONFIG_URI=~/.ros/DEFAULT_RMW_ZENOH_ROUTER_CONFIG.json5
+# (for example if we use serial to talk to the ESP32)
+# ENV ZENOH_ROUTER_CONFIG_URI=~/.ros/DEFAULT_RMW_ZENOH_ROUTER_CONFIG.json5
 # Set up the environment for an interactive terminal.
 RUN echo 'export RCUTILS_CONSOLE_OUTPUT_FORMAT="[{name} {time}]: {message}"' >> /root/.bashrc && \
     echo "export RCUTILS_COLORIZED_OUTPUT=1" >> /root/.bashrc && \
     echo "source /opt/ros/$ROS_DISTRO/setup.bash" >> /root/.bashrc && \
+    echo "source /root/workshop_ws/install/setup.bash" >> /root/.bashrc && \
     echo "alias sws='source ./install/setup.bash'" >> /root/.bashrc && \
     echo "alias symlink_build='colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release --symlink-install --event-handlers log-'" >> /root/.bashrc
 

@@ -13,6 +13,6 @@ PointerAlignment: Middle
 ReflowComments: true
 IncludeBlocks: Preserve
 InsertBraces: true
-...
+---
 Language: Json
 BasedOnStyle: llvm

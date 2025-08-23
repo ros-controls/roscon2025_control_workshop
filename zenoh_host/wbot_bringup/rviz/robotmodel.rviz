@@ -1,13 +1,11 @@
 Panels:
   - Class: rviz_common/Displays
-    Help Height: 138
+    Help Height: 0
     Name: Displays
     Property Tree Widget:
-      Expanded:
-        - /Global Options1
-        - /Status1
+      Expanded: ~
       Splitter Ratio: 0.5959302186965942
-    Tree Height: 606
+    Tree Height: 744
 Visualization Manager:
   Class: ""
   Displays:
@@ -132,7 +130,7 @@ Visualization Manager:
       Value: false
   Enabled: true
   Global Options:
-    Background Color: 48; 48; 48
+    Background Color: 255; 255; 255
     Fixed Frame: odom
     Frame Rate: 30
   Name: root
@@ -169,7 +167,7 @@ Visualization Manager:
       Pitch: 0.49979734420776367
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 0.5972700119018555
+      Yaw: 0.5872700214385986
     Saved: ~
 Window Geometry:
   Displays:
