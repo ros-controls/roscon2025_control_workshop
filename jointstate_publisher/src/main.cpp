@@ -13,8 +13,8 @@
 
 // Zenoh-specific parameters
 #define MODE "client"
-#define ROUTER_ADDRESS \
-  "tcp/10.42.0.1:7447"  // change this to match your ROS 2 host router's ip address
+// change this to match your ROS 2 host router's ip address
+#define ROUTER_ADDRESS "tcp/10.42.0.1:7447"
 
 /* ---------- LED Functions ----------- */
 unsigned long previousBlinkMillis = 0;
