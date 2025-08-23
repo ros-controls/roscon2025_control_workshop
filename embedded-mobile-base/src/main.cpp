@@ -349,8 +349,5 @@ void loop()
     previousLoopMillis = millis();
     // Publish the current state
     publish_joint_state();
-
-    // Blink the LED without blocking
-    nonBlockingBlink(0, 100, 0, 100);  // Green blink every 100ms
   }
 }
