@@ -48,7 +48,7 @@ void blockingBlinkRGB(int r, int g, int b, int sleep_ms)
 void joint_state_callback(uint8_t * rx_data, size_t data_len);
 
 /* -------------------------------------- */
-// Example Publisher
+// Setup JointState publisher and subscriber
 picoros_publisher_t pub_js = {
   .topic =
     {
@@ -68,7 +68,7 @@ picoros_subscriber_t sub_js = {
   .user_callback = joint_state_callback,
 };
 
-// Example node
+// Embedded mobile base node (you can see this on the host if you run `ros2 node list`)
 picoros_node_t node = {
   .name = "wbot_picoros_node",
 };
@@ -84,10 +84,6 @@ unsigned long last_update_time_ms = 0;
 // Buffer for publication, used from this thread
 uint8_t pub_buf[1024];
 
-double current_velocity[num_joints] = {0};  // Current joint velocities
-double joint_inertia[num_joints] = {0.05, 0.05, 0.05};
-double friction_coeff[num_joints] = {0.1, 0.1, 0.1};
-const double VELOCITY_CONTROL_P_GAIN = 5.0;
 
 void update_led_based_on_velocity(double velocity_left, double velocity_right)
 {
