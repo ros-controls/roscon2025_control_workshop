@@ -48,7 +48,7 @@ void blockingBlinkRGB(int r, int g, int b, int sleep_ms)
 void joint_state_callback(uint8_t * rx_data, size_t data_len);
 
 /* -------------------------------------- */
-// Example Publisher
+// Setup JointState publisher and subscriber
 picoros_publisher_t pub_js = {
   .topic =
     {
@@ -68,7 +68,7 @@ picoros_subscriber_t sub_js = {
   .user_callback = joint_state_callback,
 };
 
-// Example node
+// Embedded mobile base node (you can see this on the host if you run `ros2 node list`)
 picoros_node_t node = {
   .name = "wbot_picoros_node",
 };
@@ -84,8 +84,98 @@ unsigned long last_update_time_ms = 0;
 // Buffer for publication, used from this thread
 uint8_t pub_buf[1024];
 
+
+void update_led_based_on_velocity(double velocity_left, double velocity_right)
+{
+  // Calculate motion characteristics
+  double avg_vel = (velocity_left + velocity_right) / 2.0;  // Average velocity (forward/backward)
+  double diff_vel = velocity_left - velocity_right;         // Velocity difference (turning)
+
+  // Thresholds
+  const double min_vel = 0.05;        // Minimum velocity to consider "moving"
+  const double max_vel = 2.0;         // Maximum expected velocity for scaling
+  const double turn_threshold = 0.1;  // Minimum difference to consider "turning"
+
+  // Check if robot is essentially stopped
+  if (abs(avg_vel) < min_vel && abs(diff_vel) < turn_threshold)
+  {
+    // Robot stopped - turn off LED
+    neopixelWrite(RGB_BUILTIN, 0, 0, 0);
+    return;
+  }
+
+  // Initialize RGB values
+  int red = 0, green = 0, blue = 0;
+
+  // Check if mainly driving straight (forward/backward)
+  if (abs(diff_vel) < turn_threshold)
+  {
+    // Driving straight - use RED proportional to speed
+    int intensity = (int)(abs(avg_vel) / max_vel * 255.0);
+    intensity = constrain(intensity, 0, 255);
+    red = intensity;
+  }
+  // Check if mainly turning in place
+  else if (abs(avg_vel) < min_vel)
+  {
+    // Pure turning
+    int intensity = (int)(abs(diff_vel) / max_vel * 255.0);
+    intensity = constrain(intensity, 0, 255);
+
+    if (diff_vel > 0)
+    {
+      // Turning left - BLUE
+      blue = intensity;
+    }
+    else
+    {
+      // Turning right - GREEN
+      green = intensity;
+    }
+  }
+  // Arc movement - mix colors
+  else
+  {
+    // Calculate base intensities
+    int forward_intensity = (int)(abs(avg_vel) / max_vel * 255.0);
+    int turn_intensity = (int)(abs(diff_vel) / max_vel * 255.0);
+
+    forward_intensity = constrain(forward_intensity, 0, 255);
+    turn_intensity = constrain(turn_intensity, 0, 255);
+
+    // Mix red (forward/backward) with turn color
+    red = forward_intensity;
+
+    if (diff_vel > 0)
+    {
+      // Arc left - mix RED + BLUE
+      blue = turn_intensity;
+    }
+    else
+    {
+      // Arc right - mix RED + GREEN
+      green = turn_intensity;
+    }
+
+    // Scale down to prevent oversaturation
+    double scale = 1.0;
+    int max_component = max(red, max(green, blue));
+    if (max_component > 255)
+    {
+      scale = 255.0 / max_component;
+    }
+
+    red = (int)(red * scale);
+    green = (int)(green * scale);
+    blue = (int)(blue * scale);
+  }
+
+  // Update the LED
+  neopixelWrite(RGB_BUILTIN, red, green, blue);
+}
+
 // This function calculates joints positions given the current velocity commands.
-void update_desired_positions()
+void execute_commands_and_update_robot_state()
 {
   noInterrupts();  // Begin critical section
 
@@ -135,11 +225,13 @@ void joint_state_callback(uint8_t * rx_data, size_t data_len)
     {
       cmd_vel[i] = js.velocity.data[i];
     }
-    update_desired_positions();
+    execute_commands_and_update_robot_state();
+    update_led_based_on_velocity(cmd_vel[0], cmd_vel[1]);
   }
   else
   {
     printf("JointState message deserialization error\n");
+    update_led_based_on_velocity(0., 0.);
   }
 }
 
@@ -253,8 +345,5 @@ void loop()
     previousLoopMillis = millis();
     // Publish the current state
     publish_joint_state();
-
-    // Blink the LED without blocking
-    nonBlockingBlink(0, 100, 0, 100);  // Green blink every 100ms
   }
 }
