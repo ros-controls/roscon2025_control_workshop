@@ -12,8 +12,7 @@
 
 // Zenoh-specific parameters
 #define MODE "client"
-#define ROUTER_ADDRESS \
-  "tcp/192.168.9.241:7447"  // change this to match your ROS 2 host router's ip address
+#define ROUTER_ADDRESS "serial/43.44#baudrate=115200"
 
 /* ---------- LED Functions ----------- */
 void blinkRGB(int r, int g, int b, int sleep_ms)
@@ -113,6 +112,7 @@ void setup(void)
   };
 
   Serial.printf("Starting pico-ros interface %s %s\n", ifx.mode, ifx.locator);
+  printf("Starting pico-ros interface %s %s\n", ifx.mode, ifx.locator);
   while (picoros_interface_init(&ifx) == PICOROS_NOT_READY)
   {
     printf("Waiting RMW init...\n");
