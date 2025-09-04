@@ -86,7 +86,7 @@ static void publish_joy_task(void *pvParameters)
     }
 }
 
-void app_main(void)
+extern "C" void app_main(void)
 {
     //Initialize NVS
     esp_err_t ret = nvs_flash_init();
