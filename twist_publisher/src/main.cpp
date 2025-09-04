@@ -1,137 +1,128 @@
-#include <Arduino.h>
-#include <WiFi.h>
-
-#include <stdint.h>
-#include <stdio.h>
+#include <stdlib.h>
+// #include "wifi_connect.h"
+#include "esp_log.h"
+#include "hal/adc_types.h"
+#include "nvs_flash.h"
+#include "driver/adc.h"
 #include "picoros.h"
 #include "picoserdes.h"
 
-// WiFi-specific parameters
-#define SSID "your_ssid"
-#define PASS "your_pw"
 
-// Zenoh-specific parameters
-#define MODE "client"
-#define ROUTER_ADDRESS "serial/43.44#baudrate=115200"
+// Wifi Configuration
+#define WIFI_SSID                   "yourWIFI SSID"
+#define WIFI_PASS                   "password"
+#define WIFI_MAXIMUM_RETRY          5
 
-/* ---------- LED Functions ----------- */
-void blinkRGB(int r, int g, int b, int sleep_ms)
-{
-  neopixelWrite(RGB_BUILTIN, r, g, b);
-  delay(sleep_ms / 2);
-  neopixelWrite(RGB_BUILTIN, 0, 0, 0);
-  delay(sleep_ms / 2);
-}
+// Joystick config
+#define ADC1_CH_X                   ADC1_CHANNEL_5
+#define ADC1_CH_Y                   ADC1_CHANNEL_4
+#define DEAD_BAND_PERCENT           10
+#define UPDATE_PERIOD_MS            50
 
-/* -------------------------------------- */
-// Example Publisher
-picoros_publisher_t pub_log = {
-  .topic =
-    {
-      .name = "picoros/cmd_vel",
-      .type = ROSTYPE_NAME(ros_Twist),
-      .rihs_hash = ROSTYPE_HASH(ros_Twist),
+// Pico-ROS config
+#define TOPIC_NAME                  "joy"
+#define MODE                        "client"
+#define ROUTER_ADDRESS              "serial/UART_0#baudrate=115200"
+
+
+// ROS node
+picoros_node_t node = {
+    .name = "picoros_joystick",
+};
+
+// Publisher
+picoros_publisher_t pub_joy = {
+    .topic = {
+        .name = TOPIC_NAME,
+        .type = ROSTYPE_NAME(ros_Twist),
+        .rihs_hash = ROSTYPE_HASH(ros_Twist),
     },
 };
 
-// Example node
-picoros_node_t node = {
-  .name = "cmd_vel_pub",
+// Buffer for publication, used from this thread
+#define PUB_BUF_SIZE 1024
+uint8_t pub_buf[PUB_BUF_SIZE];
+
+
+enum{
+    X_AXIS,
+    Y_AXIS,
+    NUM_AXIS,
 };
 
-// Buffer for publication, used from this thread
-uint8_t pub_buf[1024];
-
-void publish_twist()
+static void publish_joy_task(void *pvParameters)
 {
-  static uint32_t counter = 0;
-  float amplitude = 1.0;
-  float divisions = 20.0;
-  ros_Vector3 linear = {
-    .x = amplitude * sin(float(counter) / divisions),
-    .y = 0.0,
-    .z = 0.0,
-  };
-  ros_Vector3 angular = {
-    .x = 0.0,
-    .y = 0.0,
-    .z = amplitude * cos(float(counter) / divisions),
-  };
-  ros_Twist twist = {
-    .linear = linear,
-    .angular = angular,
-  };
-  Serial.printf("Publishing Twist message X[%.3f]m/sec ...\n", linear.x);
-  size_t len = ps_serialize(pub_buf, &twist, 1024);
-  if (len > 0)
-  {
-    picoros_publish(&pub_log, pub_buf, len);
-  }
-  else
-  {
-    Serial.printf("Twist message serialization error.");
-  }
-  counter++;
+    while(true){
+        int middle_range = 0x07FF;
+        int x_raw = adc1_get_raw( ADC1_CH_X);
+        int y_raw = adc1_get_raw( ADC1_CH_Y);
+        int x_pcnt = ((x_raw - middle_range) * 100) / middle_range; 
+        int y_pcnt = ((y_raw - middle_range) * 100) / middle_range; 
+        if (abs(x_pcnt) < DEAD_BAND_PERCENT){ x_pcnt = 0; }
+        if (abs(y_pcnt) < DEAD_BAND_PERCENT){ y_pcnt = 0; }
+        z_clock_t clk = z_clock_now();
+        // ros_Twist joy = {
+        //     .header.stamp.nanosec = clk.tv_nsec, 
+        //     .header.stamp.sec = clk.tv_sec,
+        //     .header.frame_id = "esp32-joystick",
+        //     .axes = {
+        //         .data = (float[NUM_AXIS]){ 
+        //             [X_AXIS] = x_pcnt / 100.0f,  
+        //             [Y_AXIS] = y_pcnt / 100.0f
+        //         },
+        //         .n_elements = NUM_AXIS
+        //     },
+        // };
+        // size_t len = ps_serialize(pub_buf, &joy, PUB_BUF_SIZE);
+        // if (len > 0){
+        //     ESP_LOGI(node.name, "Publishing joystick data x:%.2f y:%.2f",
+        //          joy.axes.data[X_AXIS], joy.axes.data[Y_AXIS] );
+        //     picoros_publish(&pub_joy, pub_buf, len);
+        // }
+        // else{
+        //     ESP_LOGE(node.name, "ros_Joy message serialization error.");
+        // }
+        z_sleep_ms(UPDATE_PERIOD_MS);
+    }
 }
 
-void setup(void)
+void app_main(void)
 {
-  pinMode(RGB_BUILTIN, OUTPUT);
-  neopixelWrite(RGB_BUILTIN, 0, 0, 0);
-  // Initialize Serial for debug
-  Serial.begin(115200);
-  while (!Serial)
-  {
-    delay(1000);
-  }
-  int num_boot_loops = 1;
-  for (auto i = 1; i <= num_boot_loops; i++)
-  {
-    Serial.printf("Booting... [%d/%d]\n", i, num_boot_loops);
-    blinkRGB(255, 255, 0, 500);
-    Serial.flush();
-  }
+    //Initialize NVS
+    esp_err_t ret = nvs_flash_init();
+    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+      ESP_ERROR_CHECK(nvs_flash_erase());
+      ret = nvs_flash_init();
+    }
+    ESP_ERROR_CHECK(ret);
 
-  Serial.printf("Connecting to WiFi %s!\n", SSID);
-  // Set WiFi in STA mode and trigger attachment
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(SSID, PASS);
-  while (WiFi.status() != WL_CONNECTED)
-  {
-    blinkRGB(0, 0, 255, 500);
-  }
-  Serial.printf("Connected to WiFi [%s] with address [%s]\n", SSID, WiFi.localIP().toString());
-  neopixelWrite(RGB_BUILTIN, 0, 0, 255);
-  delay(2000);  // go solid indicating success
-  neopixelWrite(RGB_BUILTIN, 0, 0, 0);
+    // Init ADC
+    adc1_config_width(ADC_WIDTH_BIT_12);
+    adc1_config_channel_atten( ADC1_CH_X, ADC_ATTEN_DB_12 );
+    adc1_config_channel_atten( ADC1_CH_Y, ADC_ATTEN_DB_12 );
+    
+    // Init WIFI
+    
+    // wifi_init_sta(WIFI_SSID, WIFI_PASS, WIFI_MAXIMUM_RETRY);
+    
+    // Init Pico-ROS
+    picoros_interface_t ifx = {
+        .mode = MODE,
+        .locator = ROUTER_ADDRESS,
+    };
 
-  // Initialize Pico ROS interface
-  picoros_interface_t ifx = {
-    .mode = MODE,
-    .locator = ROUTER_ADDRESS,
-  };
-
-  Serial.printf("Starting pico-ros interface %s %s\n", ifx.mode, ifx.locator);
-  printf("Starting pico-ros interface %s %s\n", ifx.mode, ifx.locator);
-  while (picoros_interface_init(&ifx) == PICOROS_NOT_READY)
-  {
-    printf("Waiting RMW init...\n");
-    blinkRGB(255, 0, 0, 500);
-    z_sleep_s(1);
-  }
-
-  Serial.printf("Starting Pico-ROS node %s domain:%d\n", node.name, node.domain_id);
-  picoros_node_init(&node);
-
-  Serial.printf("Declaring publisher on %s\n", pub_log.topic.name);
-  picoros_publisher_declare(&node, &pub_log);
-}
-
-// loop rate is controlled with LED blink sleeping
-void loop()
-{
-  publish_twist();
-  blinkRGB(
-    0, 100, 0,
-    100);  // sleep for 100 ms and blink the LED Green to let the user know the message went out
+    ESP_LOGI(node.name, "Starting pico-ros interface %s %s\n", ifx.mode, ifx.locator );
+    while (picoros_interface_init(&ifx) == PICOROS_NOT_READY){
+        ESP_LOGI(node.name, "Waiting RMW init...\n");
+        z_sleep_s(1);
+    }
+    
+    ESP_LOGI(node.name, "Starting Pico-ROS node %s domain:%lu\n", node.name, node.domain_id);
+    picoros_node_init(&node);
+    
+    ESP_LOGI(node.name, "Declaring publisher on %s\n", pub_joy.topic.name);
+    picoros_publisher_declare(&node, &pub_joy);
+    
+    // Publisher task
+    xTaskCreate(publish_joy_task, "publish_twist_task", 4096, NULL, 1, NULL);
 }
