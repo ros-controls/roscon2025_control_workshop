@@ -21,8 +21,11 @@ docker exec -it ros2_control_roscon25 bash
 
 2. Start the Zenoh router and note the wireless IP address it is running on
 ```bash
-ZENOH_CONFIG_OVERRIDE='listen/endpoints=["tcp/[::]:7447","serial//dev/ttyACM1#baudrate=115200"]' ros2 run rmw_zenoh_cpp rmw_zenohd
+ZENOH_CONFIG_OVERRIDE='listen/endpoints=["tcp/[::]:7447","serial//dev/ttyACM0#baudrate=115200"]' ros2 run rmw_zenoh_cpp rmw_zenohd
 ```
+
+> [!NOTE]
+> The port `/dev/ttyACM0` in the above `ZENOH_CONFIG_OVERRIDE` variable should correspond to the USB connected to the port COMM/UART on the ESP32 board.
 
 You should see something like this in the output
 ```
@@ -38,7 +41,7 @@ Started Zenoh router with id a0a93e6969d215a11964e6a3bde24ff3
 4. Once the program starts on the ESP32 the
 - LED will start blinking `RED`, `GREEN` and `BLUE` at the startup
 - LED in `YELLOW` color represents that it is waiting to connect to the RMW router.
-- LED will start blinking Green after it has connected to to the Zenoh host and is publishing messages
+- LED will start blinking `GREEN` after it has connected to to the Zenoh host and is publishing messages
 
 5. On the host open a second interactive terminal to the Workshop container and open Plogjuggler
 ```bash
