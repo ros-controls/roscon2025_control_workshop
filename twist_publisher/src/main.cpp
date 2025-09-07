@@ -1,41 +1,33 @@
 #include <stdlib.h>
-// #include "wifi_connect.h"
 #include "esp_log.h"
 #include "hal/adc_types.h"
 #include "nvs_flash.h"
 #include "driver/adc.h"
 #include "picoros.h"
 #include "picoserdes.h"
-
-
-// Wifi Configuration
-#define WIFI_SSID                   "yourWIFI SSID"
-#define WIFI_PASS                   "password"
-#define WIFI_MAXIMUM_RETRY          5
-
-// Joystick config
-#define ADC1_CH_X                   ADC1_CHANNEL_5
-#define ADC1_CH_Y                   ADC1_CHANNEL_4
-#define DEAD_BAND_PERCENT           10
-#define UPDATE_PERIOD_MS            50
+#include "math.h"
+#include "led_strip_esp32.h"
 
 // Pico-ROS config
-#define TOPIC_NAME                  "joy"
+#define TOPIC_NAME                  "picoros/cmd_vel"
+#define NODE_NAME                   "cmd_vel_pub"
+
+// Communication mode
 #define MODE                        "client"
 #define ROUTER_ADDRESS              "serial/UART_0#baudrate=115200"
 
-
 // ROS node
 picoros_node_t node = {
-    .name = "picoros_joystick",
+  .name = "cmd_vel_pub",
 };
 
-// Publisher
-picoros_publisher_t pub_joy = {
-    .topic = {
-        .name = TOPIC_NAME,
-        .type = ROSTYPE_NAME(ros_Twist),
-        .rihs_hash = ROSTYPE_HASH(ros_Twist),
+// ROS Publisher
+picoros_publisher_t pub_twist = {
+  .topic =
+    {
+      .name = "picoros/cmd_vel",
+      .type = ROSTYPE_NAME(ros_Twist),
+      .rihs_hash = ROSTYPE_HASH(ros_Twist),
     },
 };
 
@@ -43,51 +35,53 @@ picoros_publisher_t pub_joy = {
 #define PUB_BUF_SIZE 1024
 uint8_t pub_buf[PUB_BUF_SIZE];
 
-
-enum{
-    X_AXIS,
-    Y_AXIS,
-    NUM_AXIS,
-};
-
-static void publish_joy_task(void *pvParameters)
+static void publish_twist(void *pvParameters)
 {
-    while(true){
-        int middle_range = 0x07FF;
-        int x_raw = adc1_get_raw( ADC1_CH_X);
-        int y_raw = adc1_get_raw( ADC1_CH_Y);
-        int x_pcnt = ((x_raw - middle_range) * 100) / middle_range; 
-        int y_pcnt = ((y_raw - middle_range) * 100) / middle_range; 
-        if (abs(x_pcnt) < DEAD_BAND_PERCENT){ x_pcnt = 0; }
-        if (abs(y_pcnt) < DEAD_BAND_PERCENT){ y_pcnt = 0; }
-        z_clock_t clk = z_clock_now();
-        // ros_Twist joy = {
-        //     .header.stamp.nanosec = clk.tv_nsec, 
-        //     .header.stamp.sec = clk.tv_sec,
-        //     .header.frame_id = "esp32-joystick",
-        //     .axes = {
-        //         .data = (float[NUM_AXIS]){ 
-        //             [X_AXIS] = x_pcnt / 100.0f,  
-        //             [Y_AXIS] = y_pcnt / 100.0f
-        //         },
-        //         .n_elements = NUM_AXIS
-        //     },
-        // };
-        // size_t len = ps_serialize(pub_buf, &joy, PUB_BUF_SIZE);
-        // if (len > 0){
-        //     ESP_LOGI(node.name, "Publishing joystick data x:%.2f y:%.2f",
-        //          joy.axes.data[X_AXIS], joy.axes.data[Y_AXIS] );
-        //     picoros_publish(&pub_joy, pub_buf, len);
-        // }
-        // else{
-        //     ESP_LOGE(node.name, "ros_Joy message serialization error.");
-        // }
-        z_sleep_ms(UPDATE_PERIOD_MS);
+    uint32_t counter = 0;
+    const float amplitude = 1.0;
+    const float divisions = 20.0;
+    while (true)
+    {
+        ros_Vector3 linear = {
+            .x = amplitude * sin(float(counter) / divisions),
+            .y = 0.0,
+            .z = 0.0,
+        };
+        ros_Vector3 angular = {
+            .x = 0.0,
+            .y = 0.0,
+            .z = amplitude * cos(float(counter) / divisions),
+        };
+        ros_Twist twist = {
+            .linear = linear,
+            .angular = angular,
+        };
+        printf("Publishing Twist message X[%.3f]m/sec ...\n", linear.x);
+        size_t len = ps_serialize(pub_buf, &twist, PUB_BUF_SIZE);
+        if (len > 0)
+        {
+            picoros_publish(&pub_twist, pub_buf, len);
+            // sleep for 100 ms and blink the LED Green to let the user know the message went out
+            blink_rgb(0, 100, 0, 100);
+        }
+        else
+        {
+            printf("Twist message serialization error.");
+            // sleep for 100 ms and blink the LED Red to let the user know the message failed
+            blink_rgb(100, 0, 0, 100);
+        }
+        counter++;
     }
 }
 
 extern "C" void app_main(void)
 {
+    // Blink R,G,B to show startup
+    led_strip_init();
+    blink_rgb(255, 0, 0, 500);
+    blink_rgb(0, 255, 0, 500);
+    blink_rgb(0, 0, 255, 500);
+    
     //Initialize NVS
     esp_err_t ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
@@ -96,15 +90,8 @@ extern "C" void app_main(void)
     }
     ESP_ERROR_CHECK(ret);
 
-    // Init ADC
-    adc1_config_width(ADC_WIDTH_BIT_12);
-    adc1_config_channel_atten( ADC1_CH_X, ADC_ATTEN_DB_12 );
-    adc1_config_channel_atten( ADC1_CH_Y, ADC_ATTEN_DB_12 );
-    
-    // Init WIFI
-    
-    // wifi_init_sta(WIFI_SSID, WIFI_PASS, WIFI_MAXIMUM_RETRY);
-    
+    set_led_color(255, 255, 0); // Yellow when starting the pico-ros interface
+
     // Init Pico-ROS
     picoros_interface_t ifx = {
         .mode = MODE,
@@ -114,15 +101,16 @@ extern "C" void app_main(void)
     ESP_LOGI(node.name, "Starting pico-ros interface %s %s\n", ifx.mode, ifx.locator );
     while (picoros_interface_init(&ifx) == PICOROS_NOT_READY){
         ESP_LOGI(node.name, "Waiting RMW init...\n");
-        z_sleep_s(1);
+        blink_rgb(255, 255, 0, 1000); // blink yellow while waiting to connect
     }
     
+    set_led_color(0, 0, 255); // Blue when connected to the ROS 2 network
     ESP_LOGI(node.name, "Starting Pico-ROS node %s domain:%lu\n", node.name, node.domain_id);
     picoros_node_init(&node);
-    
-    ESP_LOGI(node.name, "Declaring publisher on %s\n", pub_joy.topic.name);
-    picoros_publisher_declare(&node, &pub_joy);
-    
+
+    ESP_LOGI(node.name, "Declaring publisher on %s\n", pub_twist.topic.name);
+    picoros_publisher_declare(&node, &pub_twist);
+
     // Publisher task
-    xTaskCreate(publish_joy_task, "publish_twist_task", 4096, NULL, 1, NULL);
+    xTaskCreate(publish_twist, "publish_twist_task", 4096, NULL, 1, NULL);
 }
