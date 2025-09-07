@@ -1,5 +1,19 @@
 FROM ros:jazzy-ros-core
 
+## Change to testing binaries for the Zenoh 0.2.6 version as it support serial transport
+# setup keys
+RUN set -eux; \
+       key='C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654'; \
+       export GNUPGHOME="$(mktemp -d)"; \
+       gpg --batch --keyserver keyserver.ubuntu.com --recv-keys "$key"; \
+       mkdir -p /usr/share/keyrings; \
+       gpg --batch --export "$key" > /usr/share/keyrings/ros2-testing-archive-keyring.gpg; \
+       gpgconf --kill all; \
+       rm -rf "$GNUPGHOME"
+
+# setup sources.list
+RUN echo "deb [ signed-by=/usr/share/keyrings/ros2-testing-archive-keyring.gpg ] http://packages.ros.org/ros2-testing/ubuntu noble main" > /etc/apt/sources.list.d/ros2-testing.list
+
 ## upgrade the base image
 RUN apt update && apt upgrade -y \
   && rm -rf /var/lib/apt/lists/*
@@ -24,14 +38,6 @@ RUN apt update && apt install -y \
     ros-$ROS_DISTRO-teleop-twist-keyboard \
     && rm -rf /var/lib/apt/lists/*
 
-# Replace default zenohd with newer version to fix keepalive issues on picoros.
-# If download doesn't work, use a different mirror from
-# https://www.eclipse.org/downloads/download.php?file=/zenoh/zenoh/1.5.0/zenoh-1.5.0-x86_64-unknown-linux-gnu-standalone.zip
-WORKDIR /opt/ros/jazzy/lib/rmw_zenoh_cpp/
-ADD https://ftp.snt.utwente.nl/pub/software/eclipse/zenoh/zenoh/1.5.0/zenoh-1.5.0-x86_64-unknown-linux-gnu-standalone.zip .
-RUN mv rmw_zenohd rmw_zenohd.original
-RUN unzip *.zip
-RUN mv zenohd rmw_zenohd
 # set environment variables
 ENV RMW_IMPLEMENTATION=rmw_zenoh_cpp
 
