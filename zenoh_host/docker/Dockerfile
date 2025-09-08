@@ -69,8 +69,9 @@ RUN echo 'export RCUTILS_CONSOLE_OUTPUT_FORMAT="[{name} {time}]: {message}"' >> 
     echo "export RCUTILS_COLORIZED_OUTPUT=1" >> /root/.bashrc && \
     echo "source /opt/ros/$ROS_DISTRO/setup.bash" >> /root/.bashrc && \
     echo "source /root/workshop_ws/install/setup.bash" >> /root/.bashrc && \
-    echo "alias sws='source ./install/setup.bash'" >> /root/.bashrc && \
-    echo "alias symlink_build='colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release --symlink-install --event-handlers log-'" >> /root/.bashrc
+    echo "alias s='source ./install/setup.bash'" >> /root/.bashrc && \
+    echo "alias cb='colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release --symlink-install --event-handlers log-'" >> /root/.bashrc && \
+    echo "alias z='ZENOH_CONFIG_OVERRIDE=\"listen/endpoints=[\\\"tcp/[::]:7447\\\",\\\"serial//dev/ttyACM0#baudrate=115200\\\"]\" ros2 run rmw_zenoh_cpp rmw_zenohd'" >> /root/.bashrc
 
 # Colorful terminal
 ENV TERM=xterm-color
