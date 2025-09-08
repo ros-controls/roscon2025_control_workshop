@@ -13,8 +13,8 @@
 #   docker exec -it ros2_control_roscon25 bash
 
 services:
-  cpu:
-    image: ros2_control_roscon25:latest
+  ros2_control_roscon25:
+    image: ghcr.io/ros-controls/roscon2025_control_workshop:latest
     container_name: ros2_control_roscon25
     build:
       context: .
