@@ -1,51 +1,41 @@
-#include <Arduino.h>
-#include <WiFi.h>
-
+#include <stdlib.h>
 #include <math.h>  // For fmod() and M_PI
 #include <stdint.h>
 #include <stdio.h>
+#include "esp_log.h"
+#include "nvs_flash.h"
 #include "picoros.h"
 #include "picoserdes.h"
+#include "math.h"
+#include "led_strip_esp32.h"
 
-// WiFi-specific parameters
-#define SSID "ros2_control_workshop_1"
-#define PASS "roscon2025"
+// Communication mode
+#define MODE                        "client"
+// The baudrate is set to 460800 to keep up with the 250Hz publishing rate
+// of the JointState publisher task. 
+#define ROUTER_ADDRESS              "serial/UART_0#baudrate=460800"
 
-// Zenoh-specific parameters
-#define MODE "client"
-// change this to match your ROS 2 host router's ip address
-#define ROUTER_ADDRESS "tcp/10.42.0.1:7447"
-
-/* ---------- LED Functions ----------- */
-unsigned long previousBlinkMillis = 0;
-bool ledState = false;
-void nonBlockingBlink(int r, int g, int b, unsigned long interval)
-{
-  if (millis() - previousBlinkMillis >= interval)
-  {
-    previousBlinkMillis = millis();
-    ledState = !ledState;
-    if (ledState)
-    {
-      neopixelWrite(RGB_BUILTIN, r, g, b);
-    }
-    else
-    {
-      neopixelWrite(RGB_BUILTIN, 0, 0, 0);
-    }
-  }
-}
-
-void blockingBlinkRGB(int r, int g, int b, int sleep_ms)
-{
-  neopixelWrite(RGB_BUILTIN, r, g, b);
-  delay(sleep_ms / 2);
-  neopixelWrite(RGB_BUILTIN, 0, 0, 0);
-  delay(sleep_ms / 2);
-}
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
 
 // Subscriber callback
 void joint_state_callback(uint8_t * rx_data, size_t data_len);
+
+// Constraint helper function
+template <typename T>
+T constrain(T value, T lower_bound, T upper_bound) {
+  if (value < lower_bound) {
+    return lower_bound;
+  } else if (value > upper_bound) {
+    return upper_bound;
+  } else {
+    return value;
+  }
+}
+
+// A helper function to get milliseconds
+uint32_t get_milliseconds() {
+    return xTaskGetTickCount() * portTICK_PERIOD_MS;
+}
 
 /* -------------------------------------- */
 // Setup JointState publisher and subscriber
@@ -84,6 +74,8 @@ unsigned long last_update_time_ms = 0;
 // Buffer for publication, used from this thread
 uint8_t pub_buf[1024];
 
+portMUX_TYPE my_spinlock = portMUX_INITIALIZER_UNLOCKED;
+
 
 void update_led_based_on_velocity(double velocity_left, double velocity_right)
 {
@@ -100,7 +92,7 @@ void update_led_based_on_velocity(double velocity_left, double velocity_right)
   if (abs(avg_vel) < min_vel && abs(diff_vel) < turn_threshold)
   {
     // Robot stopped - turn off LED
-    neopixelWrite(RGB_BUILTIN, 0, 0, 0);
+    set_led_color(0, 0, 0);
     return;
   }
 
@@ -159,7 +151,7 @@ void update_led_based_on_velocity(double velocity_left, double velocity_right)
 
     // Scale down to prevent oversaturation
     double scale = 1.0;
-    int max_component = max(red, max(green, blue));
+    int max_component = MAX(red, MAX(green, blue));
     if (max_component > 255)
     {
       scale = 255.0 / max_component;
@@ -171,15 +163,15 @@ void update_led_based_on_velocity(double velocity_left, double velocity_right)
   }
 
   // Update the LED
-  neopixelWrite(RGB_BUILTIN, red, green, blue);
+  set_led_color(red, green, blue);
 }
 
 // This function calculates joints positions given the current velocity commands.
 void execute_commands_and_update_robot_state()
 {
-  noInterrupts();  // Begin critical section
+  taskENTER_CRITICAL(&my_spinlock); // Begin critical section
 
-  current_time_ms = millis();
+  current_time_ms = get_milliseconds();
   double dt = (double)(current_time_ms - last_update_time_ms) / 1000.0;
   last_update_time_ms = current_time_ms;
 
@@ -199,7 +191,8 @@ void execute_commands_and_update_robot_state()
       desired_position[i] += 2.0 * M_PI;
     }
   }
-  interrupts();  // End critical section
+  
+  taskEXIT_CRITICAL(&my_spinlock); // End of the critical section
 }
 
 void joint_state_callback(uint8_t * rx_data, size_t data_len)
@@ -235,40 +228,43 @@ void joint_state_callback(uint8_t * rx_data, size_t data_len)
   }
 }
 
-void publish_joint_state()
+static void publish_joint_state(void *pvParameters)
 {
-  static const double efforts[] = {0.5, 0, 0.2};
-  static const char * const names[] = {
+  const double efforts[] = {0.5, 0, 0.2};
+  const char * const names[] = {
     "wbot_wheel_left_joint", "wbot_wheel_right_joint", "arbitrary_made_up_joint"};
-
-  noInterrupts();  // Disable interrupts
-  double positions[] = {desired_position[0], desired_position[1], 1};
-  double velocities[] = {cmd_vel[0], cmd_vel[1], cmd_vel[2]};
-  interrupts();  // Re-enable interrupts
-
-  z_clock_t now = z_clock_now();
-  ros_JointState joint_state = {
-    .header =
-      {
-        .stamp =
-          {
-            .sec = (int32_t)now.tv_sec,
-            .nanosec = (uint32_t)now.tv_nsec,
-          },
-      },
-    .name = {.data = (char **)names, .n_elements = 3},
-    .position = {.data = positions, .n_elements = 3},
-    .velocity = {.data = velocities, .n_elements = 3},
-    .effort = {.data = (double *)efforts, .n_elements = 3},
-  };
-  size_t len = ps_serialize(pub_buf, &joint_state, 1024);
-  if (len > 0)
+  while(true)
   {
-    picoros_publish(&pub_js, pub_buf, len);
-  }
-  else
-  {
-    Serial.printf("JointState message serialization error.");
+    taskENTER_CRITICAL(&my_spinlock); // Begin critical section
+    double positions[] = {desired_position[0], desired_position[1], 1};
+    double velocities[] = {cmd_vel[0], cmd_vel[1], cmd_vel[2]};
+    taskEXIT_CRITICAL(&my_spinlock); // End of the critical section
+
+    z_clock_t now = z_clock_now();
+    ros_JointState joint_state = {
+      .header =
+        {
+          .stamp =
+            {
+              .sec = (int32_t)now.tv_sec,
+              .nanosec = (uint32_t)now.tv_nsec,
+            },
+        },
+      .name = {.data = (char **)names, .n_elements = 3},
+      .position = {.data = positions, .n_elements = 3},
+      .velocity = {.data = velocities, .n_elements = 3},
+      .effort = {.data = (double *)efforts, .n_elements = 3},
+    };
+    size_t len = ps_serialize(pub_buf, &joint_state, 1024);
+    if (len > 0)
+    {
+      picoros_publish(&pub_js, pub_buf, len);
+    }
+    else
+    {
+      ESP_LOGI(node.name, "JointState message serialization error.");
+    }
+    vTaskDelay(pdMS_TO_TICKS(10));// Publish at ~100Hz
   }
 }
 
@@ -280,70 +276,52 @@ void initialize_desired_positions()
     cmd_vel[i] = 0.0;
   }
   // Set the initial last_update_time_ms to the current time
-  last_update_time_ms = millis();
+  last_update_time_ms = get_milliseconds();
 }
 
-void setup(void)
+extern "C" void app_main(void)
 {
-  pinMode(RGB_BUILTIN, OUTPUT);
-  neopixelWrite(RGB_BUILTIN, 0, 0, 0);
-  // Initialize Serial for debug
-  Serial.begin(115200);
-  do
-  {  // blink the LED Orange to signal start of the program
-    blockingBlinkRGB(200, 165, 0, 1000);
-  } while (!Serial);
+  led_strip_init();
+  set_led_color(0, 0, 0); // Turn off LED at start
+  blink_rgb(200, 165, 0, 1000); // Blink orange to signal start of app_main
 
-  Serial.printf("Connecting to WiFi:[%s]!\n", SSID);
-  // Set WiFi in STA mode and trigger attachment
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(SSID, PASS);
-  while (WiFi.status() != WL_CONNECTED)
-  {  // blink the LED Blue to signal we are connecting to WiFi
-    blockingBlinkRGB(0, 0, 255, 500);
+  //Initialize NVS
+  esp_err_t ret = nvs_flash_init();
+  if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+    ESP_ERROR_CHECK(nvs_flash_erase());
+    ret = nvs_flash_init();
   }
-  Serial.printf("Connected to WiFi:[%s] with address:[%s]\n", SSID, WiFi.localIP().toString());
-  // Hold Blue solid indicating success
-  neopixelWrite(RGB_BUILTIN, 0, 0, 255);
-  delay(2000);
-  neopixelWrite(RGB_BUILTIN, 0, 0, 0);
+  ESP_ERROR_CHECK(ret);
 
-  // Initialize Pico ROS interface
+  set_led_color(0, 0, 255); // Solid blue to signal NVS init complete
+  vTaskDelay(pdMS_TO_TICKS(1000));
+  set_led_color(0, 0, 0); // Turn off LED
+
+   // Initialize Pico ROS interface
   picoros_interface_t ifx = {
     .mode = MODE,
     .locator = ROUTER_ADDRESS,
   };
 
-  Serial.printf("Starting pico-ros interface:[%s] on router address:[%s]\n", ifx.mode, ifx.locator);
+  ESP_LOGI(node.name, "Starting pico-ros interface:[%s] on router address:[%s]\n", ifx.mode, ifx.locator);
   while (picoros_interface_init(&ifx) == PICOROS_NOT_READY)
   {
     printf("Waiting RMW init...\n");
     // Blink LED Red to signal we are waiting for RMW router
-    blockingBlinkRGB(255, 0, 0, 1000);
+    blink_rgb(255, 0, 0, 1000);
     z_sleep_ms(1);
   }
 
-  Serial.printf("Starting Pico-ROS node:[%s] domain:[%d]\n", node.name, node.domain_id);
+  ESP_LOGI(node.name, "Starting Pico-ROS node:[%s] domain:[%d]\n", node.name, node.domain_id);
   picoros_node_init(&node);
 
   initialize_desired_positions();
 
-  Serial.printf("Declaring publisher on [%s]\n", pub_js.topic.name);
+  ESP_LOGI(node.name, "Declaring publisher on [%s]\n", pub_js.topic.name);
   picoros_publisher_declare(&node, &pub_js);
-  Serial.printf("Declaring subscriber on [%s]\n", sub_js.topic.name);
+  ESP_LOGI(node.name, "Declaring subscriber on [%s]\n", sub_js.topic.name);
   picoros_subscriber_declare(&node, &sub_js);
-}
 
-// Variables to control loop rate
-unsigned long previousLoopMillis = 0;
-const unsigned long loopInterval = 4;  // Run loop logic every 4ms (250 Hz)
-void loop()
-{
-  // Trigger publisher and LED at desired rate
-  if (millis() - previousLoopMillis >= loopInterval)
-  {
-    previousLoopMillis = millis();
-    // Publish the current state
-    publish_joint_state();
-  }
+  // Publisher task
+  xTaskCreate(publish_joint_state, "publish_joint_state_task", 4096, NULL, 1, NULL);
 }
