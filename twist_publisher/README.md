@@ -2,8 +2,8 @@
 
 ### Prerequisite
 1. In VS Code use the `Open Folder` option to navigate to the `twist_publisher` directory
-2. Allow PlatformIO to download `zenoh-pico` into the folder `.pio/libdeps/esp32-s3-devkitc-1/zenoh-pico` (this step happens automatically after you open the folder with the PlatformIO extension enabled)
-3. Clone additional [dependencies](platformio.ini#L35) `Pico-ROS`, `Micro-CDR` and `led_strip` into the directory `.pio/libdeps/esp32-s3-devkitc-1/`
+2. Allow PlatformIO to download source based dependencies into the folder `.pio/libdeps/esp32-s3-devkitc-1/zenoh-pico` (this step happens automatically after you open the folder with the PlatformIO extension enabled)
+3. Clone additional [dependencies](platformio.ini#L35) into the directory `.pio/libdeps/esp32-s3-devkitc-1/`
 4. Install [python virtual env](https://docs.platformio.org/en/latest/faq/install-python.html) `sudo apt install python3-venv`.
 5. Setup the 99-platformio-udev.rules as per the [instructions](https://docs.platformio.org/en/latest/core/installation/udev-rules.html#platformio-udev-rules)
 
