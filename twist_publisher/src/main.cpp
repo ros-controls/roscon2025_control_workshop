@@ -1,32 +1,28 @@
-#include <Arduino.h>
-#include <WiFi.h>
-
-#include <stdint.h>
-#include <stdio.h>
+#include <stdlib.h>
+#include "esp_log.h"
+#include "hal/adc_types.h"
+#include "nvs_flash.h"
+#include "driver/adc.h"
 #include "picoros.h"
 #include "picoserdes.h"
+#include "math.h"
+#include "led_strip_esp32.h"
 
-// WiFi-specific parameters
-#define SSID "your_ssid"
-#define PASS "your_pw"
+// Pico-ROS config
+#define TOPIC_NAME                  "picoros/cmd_vel"
+#define NODE_NAME                   "cmd_vel_pub"
 
-// Zenoh-specific parameters
-#define MODE "client"
-#define ROUTER_ADDRESS \
-  "tcp/192.168.9.241:7447"  // change this to match your ROS 2 host router's ip address
+// Communication mode
+#define MODE                        "client"
+#define ROUTER_ADDRESS              "serial/UART_0#baudrate=115200"
 
-/* ---------- LED Functions ----------- */
-void blinkRGB(int r, int g, int b, int sleep_ms)
-{
-  neopixelWrite(RGB_BUILTIN, r, g, b);
-  delay(sleep_ms / 2);
-  neopixelWrite(RGB_BUILTIN, 0, 0, 0);
-  delay(sleep_ms / 2);
-}
+// ROS node
+picoros_node_t node = {
+  .name = "cmd_vel_pub",
+};
 
-/* -------------------------------------- */
-// Example Publisher
-picoros_publisher_t pub_log = {
+// ROS Publisher
+picoros_publisher_t pub_twist = {
   .topic =
     {
       .name = "picoros/cmd_vel",
@@ -35,103 +31,86 @@ picoros_publisher_t pub_log = {
     },
 };
 
-// Example node
-picoros_node_t node = {
-  .name = "cmd_vel_pub",
-};
-
 // Buffer for publication, used from this thread
-uint8_t pub_buf[1024];
+#define PUB_BUF_SIZE 1024
+uint8_t pub_buf[PUB_BUF_SIZE];
 
-void publish_twist()
+static void publish_twist(void *pvParameters)
 {
-  static uint32_t counter = 0;
-  float amplitude = 1.0;
-  float divisions = 20.0;
-  ros_Vector3 linear = {
-    .x = amplitude * sin(float(counter) / divisions),
-    .y = 0.0,
-    .z = 0.0,
-  };
-  ros_Vector3 angular = {
-    .x = 0.0,
-    .y = 0.0,
-    .z = amplitude * cos(float(counter) / divisions),
-  };
-  ros_Twist twist = {
-    .linear = linear,
-    .angular = angular,
-  };
-  Serial.printf("Publishing Twist message X[%.3f]m/sec ...\n", linear.x);
-  size_t len = ps_serialize(pub_buf, &twist, 1024);
-  if (len > 0)
-  {
-    picoros_publish(&pub_log, pub_buf, len);
-  }
-  else
-  {
-    Serial.printf("Twist message serialization error.");
-  }
-  counter++;
+    uint32_t counter = 0;
+    const float amplitude = 1.0;
+    const float divisions = 20.0;
+    while (true)
+    {
+        ros_Vector3 linear = {
+            .x = amplitude * sin(float(counter) / divisions),
+            .y = 0.0,
+            .z = 0.0,
+        };
+        ros_Vector3 angular = {
+            .x = 0.0,
+            .y = 0.0,
+            .z = amplitude * cos(float(counter) / divisions),
+        };
+        ros_Twist twist = {
+            .linear = linear,
+            .angular = angular,
+        };
+        printf("Publishing Twist message X[%.3f]m/sec ...\n", linear.x);
+        size_t len = ps_serialize(pub_buf, &twist, PUB_BUF_SIZE);
+        if (len > 0)
+        {
+            picoros_publish(&pub_twist, pub_buf, len);
+            // sleep for 100 ms and blink the LED Green to let the user know the message went out
+            blink_rgb(0, 100, 0, 100);
+        }
+        else
+        {
+            printf("Twist message serialization error.");
+            // sleep for 100 ms and blink the LED Red to let the user know the message failed
+            blink_rgb(100, 0, 0, 100);
+        }
+        counter++;
+    }
 }
 
-void setup(void)
+extern "C" void app_main(void)
 {
-  pinMode(RGB_BUILTIN, OUTPUT);
-  neopixelWrite(RGB_BUILTIN, 0, 0, 0);
-  // Initialize Serial for debug
-  Serial.begin(115200);
-  while (!Serial)
-  {
-    delay(1000);
-  }
-  int num_boot_loops = 1;
-  for (auto i = 1; i <= num_boot_loops; i++)
-  {
-    Serial.printf("Booting... [%d/%d]\n", i, num_boot_loops);
-    blinkRGB(255, 255, 0, 500);
-    Serial.flush();
-  }
+    // Blink R,G,B to show startup
+    led_strip_init();
+    blink_rgb(255, 0, 0, 500);
+    blink_rgb(0, 255, 0, 500);
+    blink_rgb(0, 0, 255, 500);
+    
+    //Initialize NVS
+    esp_err_t ret = nvs_flash_init();
+    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+      ESP_ERROR_CHECK(nvs_flash_erase());
+      ret = nvs_flash_init();
+    }
+    ESP_ERROR_CHECK(ret);
 
-  Serial.printf("Connecting to WiFi %s!\n", SSID);
-  // Set WiFi in STA mode and trigger attachment
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(SSID, PASS);
-  while (WiFi.status() != WL_CONNECTED)
-  {
-    blinkRGB(0, 0, 255, 500);
-  }
-  Serial.printf("Connected to WiFi [%s] with address [%s]\n", SSID, WiFi.localIP().toString());
-  neopixelWrite(RGB_BUILTIN, 0, 0, 255);
-  delay(2000);  // go solid indicating success
-  neopixelWrite(RGB_BUILTIN, 0, 0, 0);
+    set_led_color(255, 255, 0); // Yellow when starting the pico-ros interface
 
-  // Initialize Pico ROS interface
-  picoros_interface_t ifx = {
-    .mode = MODE,
-    .locator = ROUTER_ADDRESS,
-  };
+    // Init Pico-ROS
+    picoros_interface_t ifx = {
+        .mode = MODE,
+        .locator = ROUTER_ADDRESS,
+    };
 
-  Serial.printf("Starting pico-ros interface %s %s\n", ifx.mode, ifx.locator);
-  while (picoros_interface_init(&ifx) == PICOROS_NOT_READY)
-  {
-    printf("Waiting RMW init...\n");
-    blinkRGB(255, 0, 0, 500);
-    z_sleep_s(1);
-  }
+    ESP_LOGI(node.name, "Starting pico-ros interface %s %s\n", ifx.mode, ifx.locator );
+    while (picoros_interface_init(&ifx) == PICOROS_NOT_READY){
+        ESP_LOGI(node.name, "Waiting RMW init...\n");
+        blink_rgb(255, 255, 0, 1000); // blink yellow while waiting to connect
+    }
+    
+    set_led_color(0, 0, 255); // Blue when connected to the ROS 2 network
+    ESP_LOGI(node.name, "Starting Pico-ROS node %s domain:%lu\n", node.name, node.domain_id);
+    picoros_node_init(&node);
 
-  Serial.printf("Starting Pico-ROS node %s domain:%d\n", node.name, node.domain_id);
-  picoros_node_init(&node);
+    ESP_LOGI(node.name, "Declaring publisher on %s\n", pub_twist.topic.name);
+    picoros_publisher_declare(&node, &pub_twist);
 
-  Serial.printf("Declaring publisher on %s\n", pub_log.topic.name);
-  picoros_publisher_declare(&node, &pub_log);
-}
-
-// loop rate is controlled with LED blink sleeping
-void loop()
-{
-  publish_twist();
-  blinkRGB(
-    0, 100, 0,
-    100);  // sleep for 100 ms and blink the LED Green to let the user know the message went out
+    // Publisher task
+    xTaskCreate(publish_twist, "publish_twist_task", 4096, NULL, 1, NULL);
 }

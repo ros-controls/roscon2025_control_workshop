@@ -1,9 +1,9 @@
 #### Example JointState Publisher
 
 ### Prerequisite
-1. In VS Code use the `Open Folder` option to navigate to the `twist_publisher` directory
-1. Allow PlatformIO to download `zenoh-pico` into the folder `.pio/libdeps/esp32-s3-devkitm-1/zenoh-pico` (this step happens automatically after you open the folder with the PlatformIO extension enabled)
-1. Clone additional [dependencies](platformio.ini#L35) `Pico-ROS` and `Micro-CDR` into the directory `.pio/libdeps/esp32-s3-devkitm-1/`
+1. In VS Code use the `Open Folder` option to navigate to the `jointstate_publisher` directory
+1. Allow PlatformIO to download `zenoh-pico` into the folder `.pio/libdeps/esp32-s3-devkitc-1/zenoh-pico` (this step happens automatically after you open the folder with the PlatformIO extension enabled)
+1. Clone additional [dependencies](platformio.ini#L35) `Pico-ROS` and `Micro-CDR` into the directory `.pio/libdeps/esp32-s3-devkitc-1/`
 1. Set up the local wifi access point
 Create and configure access point:
 ```
