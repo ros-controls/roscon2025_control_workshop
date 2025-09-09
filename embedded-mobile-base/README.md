@@ -1,4 +1,4 @@
-#### Mobile Base Example
+# Mobile Base Example
 
 ### Prerequisite
 1. In VS Code use the `Open Folder` option to navigate to the `embedded-mobile-base` directory

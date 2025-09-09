@@ -1,4 +1,4 @@
-#### Example Mixed Hardware Interfaces (mock + real hardware)
+# Example Mixed Hardware Interfaces (mock + real hardware) Example
 
 ## Running the Example with Mock Hardware
 
@@ -104,15 +104,15 @@ This allows me to switch between simulating the diff drive base with mock or rea
 To see this in action run we will run our [ESP32 embedded-mobile-base](../embedded-mobile-base/) hardware and then launch our robot with the manipulator still running mock_hardware.
 
 1. Connect the ESP32 module flashed with embedded-mobile-base
-1. Start the Zenoh router
+2. Start the Zenoh router
 ```bash
 ZENOH_CONFIG_OVERRIDE='listen/endpoints=["tcp/[::]:7447","serial//dev/ttyACM0#baudrate=460800"]' ros2 run rmw_zenoh_cpp rmw_zenohd
 ```
-1. Launch the wbot_bringup with the `mock_hardware` argument set to `false`
+3. Launch the wbot_bringup with the `mock_hardware` argument set to `false`
 ```bash
 ros2 launch wbot_bringup wbot_manipulator.launch.xml mock_hardware:=false
 ```
-1. List the hardware components information
+4. List the hardware components information
 ```bash
 ros2 control list_hardware_components
 ```
