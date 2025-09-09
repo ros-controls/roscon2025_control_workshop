@@ -79,7 +79,7 @@ RUN echo 'export RCUTILS_CONSOLE_OUTPUT_FORMAT="[{name} {time}]: {message}"' >> 
     echo "source /root/workshop_ws/install/setup.bash" >> /root/.bashrc && \
     echo "alias s='source ./install/setup.bash'" >> /root/.bashrc && \
     echo "alias cb='colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release --symlink-install --event-handlers log-'" >> /root/.bashrc && \
-    echo "alias z='ZENOH_CONFIG_OVERRIDE=\"listen/endpoints=[\\\"tcp/[::]:7447\\\",\\\"serial//dev/ttyACM0#baudrate=115200\\\"]\" ros2 run rmw_zenoh_cpp rmw_zenohd'" >> /root/.bashrc
+    echo "alias z='ZENOH_CONFIG_OVERRIDE=\"listen/endpoints=[\\\"tcp/[::]:7447\\\",\\\"serial//dev/ttyACM0#baudrate=460800\\\"]\" ros2 run rmw_zenoh_cpp rmw_zenohd'" >> /root/.bashrc
 
 # Colorful terminal
 ENV TERM=xterm-color
