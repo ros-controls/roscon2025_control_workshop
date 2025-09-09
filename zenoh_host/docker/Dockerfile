@@ -47,7 +47,7 @@ COPY ./wbot_bringup ./wbot_bringup
 RUN git clone https://github.com/ros-controls/topic_based_hardware_interfaces.git -b 0.2.0
 # piper_ros2 uses lfs for mesh storage
 RUN git lfs install
-RUN git clone https://github.com/MarqRazz/piper_ros2.git -b update_deps
+RUN git clone https://github.com/MarqRazz/piper_ros2.git
 
 # pull dependencies
 RUN apt update && apt install -y python3-rosdep && \
