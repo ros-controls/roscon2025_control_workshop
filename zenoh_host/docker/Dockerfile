@@ -61,7 +61,6 @@ RUN apt update && apt install -y python3-rosdep && \
   rosdep init && \
   apt update && \
   rosdep update --rosdistro=$ROS_DISTRO && \
-#  MOVEIT_KEYS=$(rosdep keys --from-paths src --ignore-src | grep -i moveit | tr '\n' ' ') && \
   rosdep install --rosdistro=$ROS_DISTRO --ignore-src --skip-keys="moveit_core moveit_configs_utils moveit_ros_planning moveit_kinematics moveit_planners moveit_simpler_controller_manager moveit_ros_move_group moveit_ros_visualization moveit_common gz_ros2_control" --from-path /root/workshop_ws/src -y && \
   rm -rf /var/lib/apt/lists/*
 
