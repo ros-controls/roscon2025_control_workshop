@@ -11,7 +11,7 @@
     <xacro:arg name="namespace" default="${prefix}"/>
     <xacro:include filename="$(find turtlebot3_description)/urdf/turtlebot3_waffle.urdf"/>
     <xacro:include filename="$(find wbot_description)/urdf/wbot.ros2_control.xacro"/>
-    <xacro:property name="ros2_control_name" value="wbot_control"/>
+    <xacro:property name="ros2_control_name" value="wbot_base_control"/>
     <xacro:wbot_ros2_control
       name="${ros2_control_name}"
       mock_hardware="${mock_hardware}"

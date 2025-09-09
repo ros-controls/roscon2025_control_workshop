@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<robot name="wbot" xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <xacro:macro name="load_wbot" params="
+    prefix:=wbot_
+    joint_command_topic:=/picoros/joint_commands
+    joint_states_topic:=/picoros/joint_states
+    mock_hardware:=false">
+
+    <!-- Import macros for mobile base hardware components -->
+    <xacro:include filename="$(find wbot_description)/urdf/wbot_macro.xacro"/>
+    <xacro:load_wbot
+        prefix="$(arg prefix)"
+        mock_hardware="$(arg mock_hardware)"/>
+
+    <!-- Import macros for manipulator hardware components -->
+    <xacro:include filename="$(find piper_description)/urdf/piper_macro.xacro" />
+    <!-- initial position for simulation -->
+    <xacro:arg name="initial_positions_file" default="$(find piper_description)/config/initial_positions.yaml"/>
+    <!-- convert to property to use substitution in function -->
+    <xacro:property name="initial_positions_file" default="$(arg initial_positions_file)"/>
+    <!-- Load the piper arm but always use mock_hardware because we don't have access to one right now -->
+    <xacro:load_piper
+        parent="$(arg prefix)base_link"
+        prefix="$(arg prefix)arm_"
+        mock_hardware="true"
+        initial_positions="${xacro.load_yaml(initial_positions_file)}">
+      <origin xyz="-0.0 0 0.1" rpy="0 0 0" />  <!-- this is in collision with the lidar but we are not using it. -->
+    </xacro:load_piper>
+
+  </xacro:macro>
+</robot>
