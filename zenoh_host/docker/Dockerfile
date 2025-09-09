@@ -6,23 +6,24 @@ RUN apt update && apt upgrade -y \
 
 RUN apt update && apt install -y \
     build-essential \
+    git \
+    git-lfs \
     python3-colcon-cmake \
     python3-colcon-common-extensions \
     python3-colcon-ros \
     python3-rosdep \
     python3-vcstool \
-    git \
-    git-lfs \
-    ros-$ROS_DISTRO-rmw-zenoh-cpp \
     ros-$ROS_DISTRO-generate-parameter-library-py \
     ros-$ROS_DISTRO-joint-state-broadcaster \
     ros-$ROS_DISTRO-joint-trajectory-controller \
     ros-$ROS_DISTRO-plotjuggler \
     ros-$ROS_DISTRO-plotjuggler-ros \
+    ros-$ROS_DISTRO-rmw-zenoh-cpp \
     ros-$ROS_DISTRO-robot-state-publisher \
     ros-$ROS_DISTRO-ros2-control \
     ros-$ROS_DISTRO-ros2-control-cmake \
     ros-$ROS_DISTRO-teleop-twist-keyboard \
+    vim \
     && rm -rf /var/lib/apt/lists/*
 
 # Replace default zenohd with newer version to fix keepalive issues on picoros.
