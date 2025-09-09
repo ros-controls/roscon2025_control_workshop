@@ -53,7 +53,7 @@ COPY ./wbot_bringup ./wbot_bringup
 RUN git clone https://github.com/ros-controls/topic_based_hardware_interfaces.git --depth 1 -b 0.2.0
 # piper_ros2 uses lfs for mesh storage
 RUN git lfs install
-RUN git clone https://github.com/MarqRazz/piper_ros2.git --depth 1
+RUN git clone https://github.com/MarqRazz/piper_ros2.git --depth 1 -b v0.1.0
 RUN touch piper_ros2/piper_moveit_config/COLCON_IGNORE
 
 # pull dependencies
