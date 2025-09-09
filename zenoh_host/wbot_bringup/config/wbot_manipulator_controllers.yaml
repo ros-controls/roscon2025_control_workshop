@@ -1,0 +1,105 @@
+controller_manager:
+  ros__parameters:
+    update_rate: 100  # Hz (this can be as fast or slower than the ESP32's loop rate)
+
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+    diff_drive_base_controller:
+      type: diff_drive_controller/DiffDriveController
+
+    joint_trajectory_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+
+    gripper_controller:
+      type: parallel_gripper_action_controller/GripperActionController
+
+diff_drive_base_controller:
+  ros__parameters:
+    left_wheel_names: ["wbot_wheel_left_joint"]
+    right_wheel_names: ["wbot_wheel_right_joint"]
+
+    wheel_separation: 0.287 # Shortest distance between the left and right wheels
+    wheel_radius: 0.033
+
+    wheel_separation_multiplier: 1.0
+    left_wheel_radius_multiplier: 1.0
+    right_wheel_radius_multiplier: 1.0
+
+    publish_rate: 50.0
+    odom_frame_id: odom
+    base_frame_id: wbot_base_footprint
+    pose_covariance_diagonal : [0.001, 0.001, 0.0, 0.0, 0.0, 0.01]
+    twist_covariance_diagonal: [0.001, 0.0, 0.0, 0.0, 0.0, 0.01]
+
+    open_loop: false
+    position_feedback: true
+    enable_odom_tf: true
+
+    cmd_vel_timeout: 0.5
+
+    # Velocity and acceleration limits
+    # Whenever a min_* is unspecified, default to -max_*
+    linear.x.has_velocity_limits: true
+    linear.x.has_acceleration_limits: true
+    linear.x.has_jerk_limits: false
+    linear.x.max_velocity: 1.0
+    linear.x.min_velocity: -1.0
+    linear.x.max_acceleration: 2.5
+    linear.x.max_jerk: 0.0
+    linear.x.min_jerk: 0.0
+
+    angular.z.has_velocity_limits: true
+    angular.z.has_acceleration_limits: true
+    angular.z.has_jerk_limits: false
+    angular.z.max_velocity: 2.0
+    angular.z.min_velocity: -2.0
+    angular.z.max_acceleration: 6.2
+    angular.z.min_acceleration: -6.2
+    angular.z.max_jerk: 0.0
+    angular.z.min_jerk: 0.0
+
+joint_trajectory_controller:
+  ros__parameters:
+    joints:
+      - wbot_arm_joint_1
+      - wbot_arm_joint_2
+      - wbot_arm_joint_3
+      - wbot_arm_joint_4
+      - wbot_arm_joint_5
+      - wbot_arm_joint_6
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position
+      - velocity
+    state_publish_rate: 0.0
+    action_monitor_rate: 20.0
+    allow_partial_joints_goal: false
+    open_loop_control: false
+    allow_nonzero_velocity_at_trajectory_end: true
+    interpolation_method: splines
+    constraints:
+      stopped_velocity_tolerance: 0.01
+      goal_time: 0.0
+      joint_1:
+        goal: 0.001
+      joint_2:
+        goal: 0.001
+      joint_3:
+        goal: 0.001
+      joint_4:
+        goal: 0.001
+      joint_5:
+        goal: 0.001
+      joint_6:
+        goal: 0.001
+
+gripper_controller:
+  ros__parameters:
+    action_monitor_rate: 20.0
+    allow_stalling: false
+    goal_tolerance: 0.01
+    joint: wbot_arm_gripper_joint
+    stall_timeout: 1.0
+    stall_velocity_threshold: 0.002

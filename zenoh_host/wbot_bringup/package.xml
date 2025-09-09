@@ -13,7 +13,7 @@
   <exec_depend>controller_manager</exec_depend>
   <exec_depend>ros2controlcli</exec_depend>
   <exec_depend>joint_state_broadcaster</exec_depend>
-  <exec_depend>topic_based_ros2_control</exec_depend>
+  <exec_depend>joint_state_topic_hardware_interface</exec_depend>
   <exec_depend>diff_drive_controller</exec_depend>
 
   <export>
