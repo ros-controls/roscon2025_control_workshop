@@ -50,17 +50,18 @@ WORKDIR /root/workshop_ws/src
 COPY ./wbot_description ./wbot_description
 COPY ./wbot_bringup ./wbot_bringup
 # clone some additional libraries to help with the demo
-RUN git clone https://github.com/ros-controls/topic_based_hardware_interfaces.git -b 0.2.0
+RUN git clone https://github.com/ros-controls/topic_based_hardware_interfaces.git --depth 1 -b 0.2.0
 # piper_ros2 uses lfs for mesh storage
 RUN git lfs install
-RUN git clone https://github.com/MarqRazz/piper_ros2.git
+RUN git clone https://github.com/MarqRazz/piper_ros2.git --depth 1 -b v0.1.0
+RUN touch piper_ros2/piper_moveit_config/COLCON_IGNORE
 
 # pull dependencies
 RUN apt update && apt install -y python3-rosdep && \
   rosdep init && \
   apt update && \
   rosdep update --rosdistro=$ROS_DISTRO && \
-  rosdep install --rosdistro=$ROS_DISTRO --ignore-src --from-path /root/workshop_ws/src -y && \
+  rosdep install --rosdistro=$ROS_DISTRO --ignore-src --skip-keys="moveit_core moveit_configs_utils moveit_ros_planning moveit_kinematics moveit_planners moveit_simpler_controller_manager moveit_ros_move_group moveit_ros_visualization moveit_common gz_ros2_control" --from-path /root/workshop_ws/src -y && \
   rm -rf /var/lib/apt/lists/*
 
 WORKDIR /root/workshop_ws
