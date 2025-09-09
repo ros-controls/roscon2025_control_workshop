@@ -18,7 +18,7 @@ sudo service udev restart
 docker exec -it ros2_control_roscon25 bash
 ```
 
-2. Start the Zenoh router and note the wireless IP address it is running on
+2. Start the Zenoh router
 ```bash
 ZENOH_CONFIG_OVERRIDE='listen/endpoints=["tcp/[::]:7447","serial//dev/ttyACM0#baudrate=460800"]' ros2 run rmw_zenoh_cpp rmw_zenohd
 ```

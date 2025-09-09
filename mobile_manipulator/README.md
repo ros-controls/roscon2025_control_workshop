@@ -95,17 +95,24 @@ gripper_controller          parallel_gripper_action_controller/GripperActionCont
 So the `JointTrajectoryController` is commanding the `wbot_arm_piper_control` hardware, the `DiffDriveController` is commanding the `wbot_base_control` hardware and the `gripper_controller` is commanding one joint from the `wbot_arm_piper_control` hardware.
 
 ## Running the Example with mixed Real + Mock Hardware
+
 Lets say we want to develop against our mobile base hardware but do not have access to a physical manipulator.
 ros2_control makes this easy by allowing developers to choose which hardware instance is run per device at launch time.
 For example you can see in [wbot_manipulator_macro.xacro](../zenoh_host/wbot_bringup/launch/wbot_manipulator.launch.xml#L25) I have hard coded the arm to always use mock hardware regardless of the xacro parameter `mock_hardware`.
 This allows me to switch between simulating the diff drive base with mock or real hardware.
 
 To see this in action run we will run our [ESP32 embedded-mobile-base](../embedded-mobile-base/) hardware and then launch our robot with the manipulator still running mock_hardware.
+
+1. Connect the ESP32 module flashed with embedded-mobile-base
+1. Start the Zenoh router
+```bash
+ZENOH_CONFIG_OVERRIDE='listen/endpoints=["tcp/[::]:7447","serial//dev/ttyACM0#baudrate=460800"]' ros2 run rmw_zenoh_cpp rmw_zenohd
+```
+1. Launch the wbot_bringup with the `mock_hardware` argument set to `false`
 ```bash
 ros2 launch wbot_bringup wbot_manipulator.launch.xml mock_hardware:=false
 ```
-
-and
+1. List the hardware components information
 ```bash
 ros2 control list_hardware_components
 ```
