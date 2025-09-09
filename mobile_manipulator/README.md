@@ -96,7 +96,7 @@ So the `JointTrajectoryController` is commanding the `wbot_arm_piper_control` ha
 
 ## Running the Example with mixed Real + Mock Hardware
 Lets say we want to develop against our mobile base hardware but do not have access to a physical manipulator.
-ros2_control makes this easy buy allowing developers to choose which hardware instance is run per device at launch time.
+ros2_control makes this easy by allowing developers to choose which hardware instance is run per device at launch time.
 For example you can see in [wbot_manipulator_macro.xacro](../zenoh_host/wbot_bringup/launch/wbot_manipulator.launch.xml#L25) I have hard coded the arm to always use mock hardware regardless of the xacro parameter `mock_hardware`.
 This allows me to switch between simulating the diff drive base with mock or real hardware.
 
