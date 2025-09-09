@@ -295,7 +295,7 @@ extern "C" void app_main(void)
 
   set_led_color(0, 0, 255); // Solid blue to signal NVS init complete
   vTaskDelay(pdMS_TO_TICKS(1000));
-  set_led_color(0, 0, 0); // Turn off LED
+  set_led_color(255, 0, 0); // Switch to solid red to signal start of RMW init
 
    // Initialize Pico ROS interface
   picoros_interface_t ifx = {
