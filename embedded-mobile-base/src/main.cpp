@@ -312,7 +312,7 @@ extern "C" void app_main(void)
     z_sleep_ms(1);
   }
 
-  ESP_LOGI(node.name, "Starting Pico-ROS node:[%s] domain:[%d]\n", node.name, node.domain_id);
+  ESP_LOGI(node.name, "Starting Pico-ROS node:[%s] domain:[%ld]\n", node.name, node.domain_id);
   picoros_node_init(&node);
 
   initialize_desired_positions();
