@@ -30,8 +30,9 @@ RUN apt update && apt install -y \
     ros-$ROS_DISTRO-generate-parameter-library-py \
     ros-$ROS_DISTRO-joint-state-broadcaster \
     ros-$ROS_DISTRO-joint-trajectory-controller \
-    ros-$ROS_DISTRO-plotjuggler \
-    ros-$ROS_DISTRO-plotjuggler-ros \
+    ros-$ROS_DISTRO-rqt-graph \
+#    ros-$ROS_DISTRO-plotjuggler \
+#    ros-$ROS_DISTRO-plotjuggler-ros \
     ros-$ROS_DISTRO-rmw-zenoh-cpp \
     ros-$ROS_DISTRO-robot-state-publisher \
     ros-$ROS_DISTRO-ros2-control \
