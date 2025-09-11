@@ -1,4 +1,4 @@
-Please provide us ROSCon UK [feedback here]([TODO](https://forms.gle/1QM9HWDUekFCRc7b7))
+Please provide us ROSCon UK [feedback here](https://forms.gle/1QM9HWDUekFCRc7b7)
 
 # ROSCon 2025 ros2_control Workshop
 
