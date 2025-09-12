@@ -101,8 +101,9 @@ At this stage, you are using a robot implementation running on the embedded boar
 ## Task 4: Let's look at the code of the hardware component & implement a limiter
 
 1. New terminal, `rc`, `cd ~/workshop_ws`, `vim src/topic_based_hardware_interfaces/joint_state_topic_hardware_interface/src/joint_state_topic_hardware_interface.cpp`
-2. Explore 
-2. 
+2. Explore the code and find the place where command limiting could be introduced.
+3. You can compile the code with the `cb` command and source the workspace with `s`.
+4. 
 
 ## Task 5: Mixing mock and real hardware
 
