@@ -108,10 +108,14 @@ Good thing we already have this locally, let's test it!
 3. Let's observe what happens when we drive the bot now! New terminal, `rc`, `ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -p stamped:=true`
 4. The ESP32 LEDs also act weirdly when driving forward. Why is that?
 
+Things to note:
+* We added a new parameter to the hardware component
+* We accessed elements of the hardware component configuration defined in the `<ros2_control>` tag.
+* A call to `std::clamp` implements a simple limiter for commands sent down to the robot
+
 <img src="docs/wbot_limited.gif">
 
 ## Task 5: Advanced introspection with pal_statistics
-
 
 The code from the previous PR still applies.
 [Let's review a PR implementing a limiter](https://github.com/ros-controls/topic_based_hardware_interfaces/pull/29)!
@@ -120,6 +124,16 @@ We'll reuse the limiting code for this task.
 1. New terminal, `rc`, `ros2 launch wbot_bringup wbot.launch.xml mock_hardware:=false enable_command_limiting:=true`
 2. New terminal, `rc`, `ros2 topic echo /controller_manager/introspection_data/full`. Look for `wbot_base_control.nonlimited` and `wbot_base_control.limited` and observe how they change as you drive around.
 3. New terminal, `rc`, `ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -p stamped:=true`
+
+Things to note:
+* We introduced new vectors to store non-limited and limited commands.
+* We added an `on_configure()` method to the hardware component as this is the recommended place to call the introspection REGISTER macro and registered the new vectors in there.
+
+This is obviously a toy example. The intended use-case for such introspection is to provide visibility into multi-step, complex computations, controller behaviour, hardware component internals, etc. Introspection-registered values could be anything that can be converted to a C++ double and are published at the rate of the `controller_manager` which is 100Hz for this workshop.
+
+For convenience, here is a plot of the values before and after limiting. The non-limited values are what the `diff_drive_controller` produce and while the limited numbers are what our hardware component outputs to the ESP32 board.
+
+<img src="docs/wbot_limited_introspection.gif">
 
 ## Task 6: Mixing mock and real hardware
 
