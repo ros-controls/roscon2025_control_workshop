@@ -5,6 +5,7 @@
     prefix:=wbot_
     joint_command_topic:=/picoros/joint_commands
     joint_states_topic:=/picoros/joint_states
+    enable_command_limiting:=false
     mock_hardware:=false">
 
     <!-- Import macros for main hardware components -->
@@ -15,6 +16,7 @@
     <xacro:wbot_ros2_control
       name="${ros2_control_name}"
       mock_hardware="${mock_hardware}"
+      enable_command_limiting="${enable_command_limiting}"
       joint_command_topic="${joint_command_topic}"
       joint_states_topic="${joint_states_topic}"/>
 
