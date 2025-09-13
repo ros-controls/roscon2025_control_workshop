@@ -51,7 +51,7 @@ WORKDIR /root/workshop_ws/src
 COPY ./wbot_description ./wbot_description
 COPY ./wbot_bringup ./wbot_bringup
 # clone some additional libraries to help with the demo
-RUN git clone https://github.com/ros-controls/topic_based_hardware_interfaces.git --depth 1 -b 0.2.0
+RUN git clone https://github.com/ros-controls/topic_based_hardware_interfaces.git --depth 1 -b add-limiter-example
 # piper_ros2 uses lfs for mesh storage
 RUN git lfs install
 RUN git clone https://github.com/MarqRazz/piper_ros2.git --depth 1 -b v0.1.0
