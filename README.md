@@ -100,12 +100,28 @@ At this stage, you are using a robot implementation running on the embedded boar
 
 ## Task 4: Let's look at the code of the hardware component & implement a limiter
 
-1. New terminal, `rc`, `cd ~/workshop_ws`, `vim src/topic_based_hardware_interfaces/joint_state_topic_hardware_interface/src/joint_state_topic_hardware_interface.cpp`
-2. Explore the code and find the place where command limiting could be introduced.
-3. You can compile the code with the `cb` command and source the workspace with `s`.
-4. 
+[Let's review a PR implementing a limiter](https://github.com/ros-controls/topic_based_hardware_interfaces/pull/29)!
+Good thing we already have this locally, let's test it!
 
-## Task 5: Mixing mock and real hardware
+1. New terminal, `rc`, `ros2 launch wbot_bringup wbot.launch.xml mock_hardware:=false enable_command_limiting:=true`
+2. Let's take a look at the ros2_control tag to remind ourselves of the configuration: `rc`, `cat src/wbot_description/urdf/wbot.ros2_control.xacro`
+3. Let's observe what happens when we drive the bot now! New terminal, `rc`, `ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -p stamped:=true`
+4. The ESP32 LEDs also act weirdly when driving forward. Why is that?
+
+<img src="docs/wbot_limited.gif">
+
+## Task 5: Advanced introspection with pal_statistics
+
+
+The code from the previous PR still applies.
+[Let's review a PR implementing a limiter](https://github.com/ros-controls/topic_based_hardware_interfaces/pull/29)!
+We'll reuse the limiting code for this task.
+
+1. New terminal, `rc`, `ros2 launch wbot_bringup wbot.launch.xml mock_hardware:=false enable_command_limiting:=true`
+2. New terminal, `rc`, `ros2 topic echo /controller_manager/introspection_data/full`. Look for `wbot_base_control.nonlimited` and `wbot_base_control.limited` and observe how they change as you drive around.
+3. New terminal, `rc`, `ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -p stamped:=true`
+
+## Task 6: Mixing mock and real hardware
 
 Lets say we want to develop against our mobile base hardware but do not have access to a physical manipulator.
 ros2_control makes this easy by allowing developers to choose which hardware instance is run per device at launch time.
@@ -219,9 +235,6 @@ ros2 action send_goal /gripper_controller/gripper_cmd control_msgs/action/Parall
 
 <img src="mobile_manipulator/wbot_gripper.gif">
 
-## Task 6: Advanced introspection with pal_statistics
-
-TODO
 
 ## Embedded projects:
 
