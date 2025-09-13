@@ -4,12 +4,14 @@
     <!-- Arguments -->
     <xacro:arg name="prefix" default="wbot_" />
     <xacro:arg name="mock_hardware" default="true" />
+    <xacro:arg name="enable_command_limiting" default="false" />
 
     <!-- Import macros for hardware components -->
     <xacro:include filename="$(find wbot_description)/urdf/wbot_macro.xacro"/>
 
     <xacro:load_wbot
         prefix="$(arg prefix)"
-        mock_hardware="$(arg mock_hardware)"/>
+        mock_hardware="$(arg mock_hardware)"
+        enable_command_limiting="$(arg enable_command_limiting)"/>
 
 </robot>
