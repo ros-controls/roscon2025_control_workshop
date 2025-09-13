@@ -3,7 +3,6 @@
 ### Prerequisite
 1. In VS Code use the `Open Folder` option to navigate to the `twist_publisher` directory
 2. Allow PlatformIO to download source based dependencies into the folder `.pio/libdeps/esp32-s3-devkitc-1/zenoh-pico` (this step happens automatically after you open the folder with the PlatformIO extension enabled)
-3. Clone additional [dependencies](platformio.ini#L35) into the directory `.pio/libdeps/esp32-s3-devkitc-1/`
 4. Install [python virtual env](https://docs.platformio.org/en/latest/faq/install-python.html) `sudo apt install python3-venv`.
 5. Setup the 99-platformio-udev.rules as per the [instructions](https://docs.platformio.org/en/latest/core/installation/udev-rules.html#platformio-udev-rules)
 
@@ -32,7 +31,7 @@ You should see something like this in the output
 2025-09-07T19:21:09.557554Z  INFO ThreadId(02) zenoh::net::runtime: Using ZID: a0a93e6969d215a11964e6a3bde24ff3
 2025-09-07T19:21:09.558261Z  INFO ThreadId(02) zenoh::net::runtime::orchestrator: Zenoh can be reached at: tcp/[fe80::4a26:638c:e6fa:d033]:7447
 2025-09-07T19:21:09.558266Z  INFO ThreadId(02) zenoh::net::runtime::orchestrator: Zenoh can be reached at: tcp/192.168.1.40:7447
-2025-09-07T19:21:09.558267Z  INFO ThreadId(02) zenoh::net::runtime::orchestrator: Zenoh can be reached at: serial//dev/ttyACM1
+2025-09-07T19:21:09.558267Z  INFO ThreadId(02) zenoh::net::runtime::orchestrator: Zenoh can be reached at: serial//dev/ttyACM0
 Started Zenoh router with id a0a93e6969d215a11964e6a3bde24ff3
 ```
 
