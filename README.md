@@ -8,7 +8,7 @@ Please provide us ROSCon UK [feedback here](https://forms.gle/1QM9HWDUekFCRc7b7)
 1. Install [docker compose](https://docs.docker.com/compose/install/linux/#install-using-the-repository).
 
 ### Docker Pull
-1. Clone this repo and navigate to the directory `<path of cloned repo>/zehoh_host`
+1. Clone this repo and navigate to the directory `<path of cloned repo>/zenoh_host`
 
 1. Get the latest container build with `docker compose pull`
 
@@ -22,7 +22,7 @@ It is possible you cannot pull due to network access or using an architecture fo
 
 2. To start the container run:
 ```
-cd <path of cloned repo>/zehoh_host
+cd <path of cloned repo>/zenoh_host
 xhost + && docker compose up -d
 ```
 
