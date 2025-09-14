@@ -71,7 +71,7 @@ In case you have a different device path than `/dev/ttyACM0`, override it by run
 ros2 topic list
 ros2 topic echo /picoros/joint_states
 ros2 topic hz /picoros/joint_states
-ros2 topic pub /picoros/joint_commands sensor_msgs/msg/JointState  '{name: ["wbot_whee^Cleft_joint", "wbot_wheel_right_joint", "dummy"], velocity: [1.0, 0.0, 0.0]}'
+ros2 topic pub /picoros/joint_commands sensor_msgs/msg/JointState  '{name: ["wbot_wheel_left_joint", "wbot_wheel_right_joint", "dummy"], velocity: [1.0, 0.0, 0.0]}'
 ```
 
 ## Task 3: Hardware & Introspection
