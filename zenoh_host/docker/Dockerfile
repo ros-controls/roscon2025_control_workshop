@@ -48,16 +48,17 @@ ENV RMW_IMPLEMENTATION=rmw_zenoh_cpp
 RUN mkdir -p /root/workshop_ws/src
 # set working directory and copy in the source packages
 WORKDIR /root/workshop_ws/src
-COPY ./wbot_description ./wbot_description
-COPY ./wbot_bringup ./wbot_bringup
-# clone some additional libraries to help with the demo
-RUN git clone https://github.com/ros-controls/topic_based_hardware_interfaces.git --depth 1 -b 0.2.0
+
 # piper_ros2 uses lfs for mesh storage
 RUN git lfs install
 RUN git clone https://github.com/MarqRazz/piper_ros2.git --depth 1 -b v0.1.0
-RUN touch piper_ros2/piper_moveit_config/COLCON_IGNORE
 
-# pull dependencies
+# clone some additional libraries to help with the demo
+RUN git clone https://github.com/ros-controls/topic_based_hardware_interfaces.git --depth 1 -b add-limiter-example
+
+COPY ./wbot_description ./wbot_description
+COPY ./wbot_bringup ./wbot_bringup
+
 RUN apt update && apt install -y python3-rosdep && \
   rosdep init && \
   apt update && \

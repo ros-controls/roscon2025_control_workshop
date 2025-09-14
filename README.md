@@ -100,12 +100,42 @@ At this stage, you are using a robot implementation running on the embedded boar
 
 ## Task 4: Let's look at the code of the hardware component & implement a limiter
 
-1. New terminal, `rc`, `cd ~/workshop_ws`, `vim src/topic_based_hardware_interfaces/joint_state_topic_hardware_interface/src/joint_state_topic_hardware_interface.cpp`
-2. Explore the code and find the place where command limiting could be introduced.
-3. You can compile the code with the `cb` command and source the workspace with `s`.
-4. 
+[Let's review a PR implementing a limiter](https://github.com/ros-controls/topic_based_hardware_interfaces/pull/29)!
+Good thing we already have this locally, let's test it!
 
-## Task 5: Mixing mock and real hardware
+1. New terminal, `rc`, `ros2 launch wbot_bringup wbot.launch.xml mock_hardware:=false enable_command_limiting:=true`
+2. Let's take a look at the ros2_control tag to remind ourselves of the configuration: `rc`, `cat src/wbot_description/urdf/wbot.ros2_control.xacro`
+3. Let's observe what happens when we drive the bot forward and backward now! New terminal, `rc`, `ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -p stamped:=true`
+4. The ESP32 LEDs also act weirdly when driving forward. Why is that?
+
+Things to note:
+* We added a new parameter to the hardware component
+* We accessed elements of the hardware component configuration defined in the `<ros2_control>` tag.
+* A call to `std::clamp` implements a simple limiter for commands sent down to the robot
+
+<img src="docs/wbot_limited.gif">
+
+## Task 5: Advanced introspection with pal_statistics
+
+The code from the previous PR still applies.
+[Let's review a PR implementing a limiter](https://github.com/ros-controls/topic_based_hardware_interfaces/pull/29)!
+We'll reuse the limiting code for this task.
+
+1. New terminal, `rc`, `ros2 launch wbot_bringup wbot.launch.xml mock_hardware:=false enable_command_limiting:=true`
+2. New terminal, `rc`, `ros2 topic echo /controller_manager/introspection_data/full`. Look for `wbot_base_control.nonlimited` and `wbot_base_control.limited` and observe how they change as you drive around.
+3. New terminal, `rc`, `ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -p stamped:=true`
+
+Things to note:
+* We introduced new vectors to store non-limited and limited commands.
+* We added an `on_configure()` method to the hardware component as this is the recommended place to call the introspection REGISTER macro and registered the new vectors in there.
+
+This is obviously a toy example. The intended use-case for such introspection is to provide visibility into multi-step, complex computations, controller behaviour, hardware component internals, etc. Introspection-registered values could be anything that can be converted to a C++ double and are published at the rate of the `controller_manager` which is 100Hz for this workshop.
+
+For convenience, here is a plot of the values before and after limiting. The non-limited values are what the `diff_drive_controller` produce and while the limited numbers are what our hardware component outputs to the ESP32 board.
+
+<img src="docs/wbot_limited_introspection.gif">
+
+## Task 6: Mixing mock and real hardware
 
 Lets say we want to develop against our mobile base hardware but do not have access to a physical manipulator.
 ros2_control makes this easy by allowing developers to choose which hardware instance is run per device at launch time.
@@ -219,9 +249,6 @@ ros2 action send_goal /gripper_controller/gripper_cmd control_msgs/action/Parall
 
 <img src="mobile_manipulator/wbot_gripper.gif">
 
-## Task 6: Advanced introspection with pal_statistics
-
-TODO
 
 ## Embedded projects:
 

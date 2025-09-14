@@ -4,6 +4,7 @@
   <xacro:macro name="wbot_ros2_control" params="
     name
     mock_hardware:=false
+    enable_command_limiting:=false
     joint_command_topic:=/joint_command_topic
     joint_states_topic:=/joint_states_topic">
 
@@ -21,25 +22,24 @@
           <param name="joint_states_topic">${joint_states_topic}</param>
           <param name="sum_wrapped_joint_states">true</param>
           <param name="trigger_joint_command_threshold">-1</param> <!-- always publish commands on the topic -->
+          <param name="enable_command_limiting">${enable_command_limiting}</param>
         </xacro:unless>
       </hardware>
       <joint name="wbot_wheel_left_joint">
         <command_interface name="velocity">
-          <param name="min">-3.15</param>
-          <param name="max">3.15</param>
+          <param name="min">-16.00</param>
+          <param name="max">16.00</param>
         </command_interface>
         <state_interface name="position"/>
         <state_interface name="velocity"/>
-        <state_interface name="effort"/>
       </joint>
       <joint name="wbot_wheel_right_joint">
         <command_interface name="velocity">
-          <param name="min">-3.15</param>
-          <param name="max">3.15</param>
+          <param name="min">-16.00</param>
+          <param name="max">13.0</param>
         </command_interface>
         <state_interface name="position"/>
         <state_interface name="velocity"/>
-        <state_interface name="effort"/>
       </joint>
     </ros2_control>
   </xacro:macro>
