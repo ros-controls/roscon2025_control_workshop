@@ -21,7 +21,7 @@ It is possible you cannot pull due to network access or using an architecture fo
 1. To run applications that have a GUI inside Docker (i.e. Rviz or Plotjuggler) we have to allow access to the screen by running: `xhost +` on the host PC once per machine startup.
 
 2. To start the container run:
-```
+```bash
 cd <path of cloned repo>/zenoh_host
 xhost + && docker compose up -d
 ```
@@ -29,12 +29,12 @@ xhost + && docker compose up -d
 3. To open an interactive shell to the running container run: `docker exec -it ros2_control_roscon25 bash`
 
 Handy alias to add to the `.bashrc`:
-```
+```bash
 echo 'alias rc="docker exec -it ros2_control_roscon25 bash"' >> ~/.bashrc
 ```
 
 4. To verify you have the container up at any time, you can run `docker ps`, you should see something similar:
-```
+```bash
 CONTAINER ID   IMAGE                                                     COMMAND                  CREATED        STATUS        PORTS     NAMES
 47852bf550b2   ghcr.io/ros-controls/roscon2025_control_workshop:latest   "/ros_entrypoint.sh …"   1 hours ago   Up 1 hours             ros2_control_roscon25
 ```
@@ -44,14 +44,20 @@ CONTAINER ID   IMAGE                                                     COMMAND
 
 1. Once in the container, let's start the zenoh daemon: `z`. This is also an alias, don't worry.
 
-2. Open a new terminal, `rc`, then in the new shell inside the container, run `ros2 launch wbot_bringup wbot.launch.xml`. This will bring up `rviz` with a simulated robot in there.
+2. Open a new terminal, `rc`, then in the new shell inside the container, run the launch file below. This will bring up `rviz` with a simulated robot in there.
+```bash
+ros2 launch wbot_bringup wbot.launch.xml
+```
 
-3. Open a new terminal, `rc`, then run `rqt_graph` & inspect the graph. Close `rqt_graph` but keep the terminal open.
+3. Open a new terminal, `rc`, let's open `rqt_graph` & inspect the results. Close `rqt_graph` but keep the terminal open.
 
-4. Make sure `rviz` is visible, let's teleop this bot: `ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -p stamped:=true`
+4. Make sure `rviz` is visible, let's teleop this bot: 
+```bash
+ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -p stamped:=true
+```
 
 5. Let's try the CLI tools too! Close the teleop tool and let's run a few commands
-```
+```bash
 ros2 control list_controllers
 ros2 control list_controller_types
 ros2 control list_hardware_components -v
@@ -65,9 +71,13 @@ ros2 control list_hardware_interfaces
 1. Take your ESP32 and plug a data-capable USB-C cable into the port labeled "COM" (see on the back).
 2. Verify that the device shows up on your laptop. Open a new terminal and run `ls /dev/ttyACM*` or `ls /dev/ttyUSB*`. We have an alias in the container expecting `/dev/ttyACM0` but we can override it.
 3. Go to the container now, `rc`, and `z` should start up the zenoh daemon with serial device support.
-In case you have a different device path than `/dev/ttyACM0`, override it by running `echo "alias z='ZENOH_CONFIG_OVERRIDE=\"listen/endpoints=[\\\"tcp/[::]:7447\\\",\\\"serial//dev/YOUR_DEVICE_PATH#baudrate=460800\\\"]\" ros2 run rmw_zenoh_cpp rmw_zenohd'" >> /root/.bashrc`. Now you can `source ~/.bashrc` and `z` should work fine. Since we won't take the container down, your setup should be fine for the rest of the day.
-4. Let's inspect what we have running at the moment.
+In case you have a different device path than `/dev/ttyACM0`, override it by running 
+```bash
+echo "alias z='ZENOH_CONFIG_OVERRIDE=\"listen/endpoints=[\\\"tcp/[::]:7447\\\",\\\"serial//dev/YOUR_DEVICE_PATH#baudrate=460800\\\"]\" ros2 run rmw_zenoh_cpp rmw_zenohd'" >> /root/.bashrc
 ```
+Now you can `source ~/.bashrc` and `z` should work fine. Since we won't take the container down, your setup should be fine for the rest of the day.
+4. Let's inspect what we have running at the moment.
+```bash
 ros2 topic list
 ros2 topic echo /picoros/joint_states
 ros2 topic hz /picoros/joint_states
@@ -77,11 +87,14 @@ ros2 topic pub /picoros/joint_commands sensor_msgs/msg/JointState  '{name: ["wbo
 ## Task 3: Hardware & Introspection
 
 1. New terminal, `rc`, `z`
-2. New terminal, `rc`, `ros2 launch wbot_bringup wbot.launch.xml mock_hardware:=false`
+2. New terminal, `rc`, 
+```bash
+ros2 launch wbot_bringup wbot.launch.xml mock_hardware:=false
+```
 Now let's introspect some more:
 
 3. Let's inspect again. New terminal, `rc`.
-```
+```bash
 rqt_graph
 ros2 topic list
 ros2 topic hz /joint_states
@@ -94,18 +107,33 @@ ros2 control list_hardware_components -v
 ros2 control list_hardware_interfaces
 ```
 
-4. Let's drive it! `ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -p stamped:=true`
+4. Let's drive it! 
+```bash
+ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -p stamped:=true
+```
 Note how now you have some lag and the ESP32 board is firing off different colours based on the direction of driving!
+
+<img src="docs/esp32-led.gif">
+
 At this stage, you are using a robot implementation running on the embedded board, controlled via your laptop. If you add wheels, you could drive it around now!
 
 ## Task 4: Let's look at the code of the hardware component & implement a limiter
 
-[Let's review a PR implementing a limiter](https://github.com/ros-controls/topic_based_hardware_interfaces/pull/29)!
+[Let's review a PR implementing a limiter](https://github.com/ros-controls/topic_based_hardware_interfaces/pull/30)!
 Good thing we already have this locally, let's test it!
 
-1. New terminal, `rc`, `ros2 launch wbot_bringup wbot.launch.xml mock_hardware:=false enable_command_limiting:=true`
-2. Let's take a look at the ros2_control tag to remind ourselves of the configuration: `rc`, `cat src/wbot_description/urdf/wbot.ros2_control.xacro`
-3. Let's observe what happens when we drive the bot forward and backward now! New terminal, `rc`, `ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -p stamped:=true`
+1. New terminal, `rc`, 
+```bash
+ros2 launch wbot_bringup wbot.launch.xml mock_hardware:=false enable_command_limiting:=true
+```
+2. Let's take a look at the ros2_control tag to remind ourselves of the configuration: `rc`, 
+```bash
+cat src/wbot_description/urdf/wbot.ros2_control.xacro
+```
+3. Let's observe what happens when we drive the bot forward and backward now! New terminal, `rc`, 
+```bash
+ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -p stamped:=true
+```
 4. The ESP32 LEDs also act weirdly when driving forward. Why is that?
 
 Things to note:
@@ -118,12 +146,23 @@ Things to note:
 ## Task 5: Advanced introspection with pal_statistics
 
 The code from the previous PR still applies.
-[Let's review a PR implementing a limiter](https://github.com/ros-controls/topic_based_hardware_interfaces/pull/29)!
+[Let's review a PR implementing a limiter](https://github.com/ros-controls/topic_based_hardware_interfaces/pull/31)!
 We'll reuse the limiting code for this task.
 
-1. New terminal, `rc`, `ros2 launch wbot_bringup wbot.launch.xml mock_hardware:=false enable_command_limiting:=true`
-2. New terminal, `rc`, `ros2 topic echo /controller_manager/introspection_data/full`. Look for `wbot_base_control.nonlimited` and `wbot_base_control.limited` and observe how they change as you drive around.
-3. New terminal, `rc`, `ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -p stamped:=true`
+1. New terminal, `rc`, 
+```bash
+ros2 launch wbot_bringup wbot.launch.xml mock_hardware:=false enable_command_limiting:=true
+```
+2. New terminal, `rc`, 
+```bash
+ros2 topic echo /controller_manager/introspection_data/full
+```
+Look for `wbot_base_control.nonlimited` and `wbot_base_control.limited` and observe how they change as you drive around.
+
+3. New terminal, `rc`, 
+```bash
+ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -p stamped:=true
+```
 
 Things to note:
 * We introduced new vectors to store non-limited and limited commands.
