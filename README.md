@@ -105,7 +105,7 @@ Good thing we already have this locally, let's test it!
 
 1. New terminal, `rc`, `ros2 launch wbot_bringup wbot.launch.xml mock_hardware:=false enable_command_limiting:=true`
 2. Let's take a look at the ros2_control tag to remind ourselves of the configuration: `rc`, `cat src/wbot_description/urdf/wbot.ros2_control.xacro`
-3. Let's observe what happens when we drive the bot now! New terminal, `rc`, `ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -p stamped:=true`
+3. Let's observe what happens when we drive the bot forward and backward now! New terminal, `rc`, `ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -p stamped:=true`
 4. The ESP32 LEDs also act weirdly when driving forward. Why is that?
 
 Things to note:
