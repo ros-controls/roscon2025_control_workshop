@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include "esp_log.h"
 #include "led_strip_esp32.h"
-#include "math.h"
 #include "nvs_flash.h"
 #include "picoros.h"
 #include "picoserdes.h"
