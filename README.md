@@ -51,7 +51,7 @@ ros2 launch wbot_bringup wbot.launch.xml
 
 3. Open a new terminal, `rc`, let's open `rqt_graph` & inspect the results. Close `rqt_graph` but keep the terminal open.
 
-4. Make sure `rviz` is visible, let's teleop this bot: 
+4. Make sure `rviz` is visible, let's teleop this bot:
 ```bash
 ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -p stamped:=true
 ```
@@ -71,7 +71,7 @@ ros2 control list_hardware_interfaces
 1. Take your ESP32 and plug a data-capable USB-C cable into the port labeled "COM" (see on the back).
 2. Verify that the device shows up on your laptop. Open a new terminal and run `ls /dev/ttyACM*` or `ls /dev/ttyUSB*`. We have an alias in the container expecting `/dev/ttyACM0` but we can override it.
 3. Go to the container now, `rc`, and `z` should start up the zenoh daemon with serial device support.
-In case you have a different device path than `/dev/ttyACM0`, override it by running 
+In case you have a different device path than `/dev/ttyACM0`, override it by running
 ```bash
 echo "alias z='ZENOH_CONFIG_OVERRIDE=\"listen/endpoints=[\\\"tcp/[::]:7447\\\",\\\"serial//dev/YOUR_DEVICE_PATH#baudrate=460800\\\"]\" ros2 run rmw_zenoh_cpp rmw_zenohd'" >> /root/.bashrc
 ```
@@ -87,7 +87,7 @@ ros2 topic pub /picoros/joint_commands sensor_msgs/msg/JointState  '{name: ["wbo
 ## Task 3: Hardware & Introspection
 
 1. New terminal, `rc`, `z`
-2. New terminal, `rc`, 
+2. New terminal, `rc`,
 ```bash
 ros2 launch wbot_bringup wbot.launch.xml mock_hardware:=false
 ```
@@ -107,7 +107,7 @@ ros2 control list_hardware_components -v
 ros2 control list_hardware_interfaces
 ```
 
-4. Let's drive it! 
+4. Let's drive it!
 ```bash
 ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -p stamped:=true
 ```
@@ -122,15 +122,15 @@ At this stage, you are using a robot implementation running on the embedded boar
 [Let's review a PR implementing a limiter](https://github.com/ros-controls/topic_based_hardware_interfaces/pull/30)!
 Good thing we already have this locally, let's test it!
 
-1. New terminal, `rc`, 
+1. New terminal, `rc`,
 ```bash
 ros2 launch wbot_bringup wbot.launch.xml mock_hardware:=false enable_command_limiting:=true
 ```
-2. Let's take a look at the ros2_control tag to remind ourselves of the configuration: `rc`, 
+2. Let's take a look at the ros2_control tag to remind ourselves of the configuration: `rc`,
 ```bash
 cat src/wbot_description/urdf/wbot.ros2_control.xacro
 ```
-3. Let's observe what happens when we drive the bot forward and backward now! New terminal, `rc`, 
+3. Let's observe what happens when we drive the bot forward and backward now! New terminal, `rc`,
 ```bash
 ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -p stamped:=true
 ```
@@ -149,17 +149,17 @@ The code from the previous PR still applies.
 [Let's review a PR implementing a limiter](https://github.com/ros-controls/topic_based_hardware_interfaces/pull/31)!
 We'll reuse the limiting code for this task.
 
-1. New terminal, `rc`, 
+1. New terminal, `rc`,
 ```bash
 ros2 launch wbot_bringup wbot.launch.xml mock_hardware:=false enable_command_limiting:=true
 ```
-2. New terminal, `rc`, 
+2. New terminal, `rc`,
 ```bash
 ros2 topic echo /controller_manager/introspection_data/full
 ```
 Look for `wbot_base_control.nonlimited` and `wbot_base_control.limited` and observe how they change as you drive around.
 
-3. New terminal, `rc`, 
+3. New terminal, `rc`,
 ```bash
 ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -p stamped:=true
 ```
@@ -185,7 +185,7 @@ This allows me to switch between simulating the diff drive base with mock or rea
 ```bash
 ros2 launch wbot_bringup wbot_manipulator.launch.xml mock_hardware:=false
 ```
-2. List the hardware components information: new terminal, `rc`, 
+2. List the hardware components information: new terminal, `rc`,
 ```bash
 ros2 control list_hardware_components
 ```

@@ -1,19 +1,19 @@
-#include <stdlib.h>
 #include <math.h>  // For fmod() and M_PI
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include "esp_log.h"
+#include "led_strip_esp32.h"
+#include "math.h"
 #include "nvs_flash.h"
 #include "picoros.h"
 #include "picoserdes.h"
-#include "math.h"
-#include "led_strip_esp32.h"
 
 // Communication mode
-#define MODE                        "client"
+#define MODE "client"
 // The baudrate is set to 460800 to keep up with the 250Hz publishing rate
-// of the JointState publisher task. 
-#define ROUTER_ADDRESS              "serial/UART_0#baudrate=460800"
+// of the JointState publisher task.
+#define ROUTER_ADDRESS "serial/UART_0#baudrate=460800"
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
@@ -22,20 +22,24 @@ void joint_state_callback(uint8_t * rx_data, size_t data_len);
 
 // Constraint helper function
 template <typename T>
-T constrain(T value, T lower_bound, T upper_bound) {
-  if (value < lower_bound) {
+T constrain(T value, T lower_bound, T upper_bound)
+{
+  if (value < lower_bound)
+  {
     return lower_bound;
-  } else if (value > upper_bound) {
+  }
+  else if (value > upper_bound)
+  {
     return upper_bound;
-  } else {
+  }
+  else
+  {
     return value;
   }
 }
 
 // A helper function to get milliseconds
-uint32_t get_milliseconds() {
-    return xTaskGetTickCount() * portTICK_PERIOD_MS;
-}
+uint32_t get_milliseconds() { return xTaskGetTickCount() * portTICK_PERIOD_MS; }
 
 /* -------------------------------------- */
 // Setup JointState publisher and subscriber
@@ -75,7 +79,6 @@ unsigned long last_update_time_ms = 0;
 uint8_t pub_buf[1024];
 
 portMUX_TYPE my_spinlock = portMUX_INITIALIZER_UNLOCKED;
-
 
 void update_led_based_on_velocity(double velocity_left, double velocity_right)
 {
@@ -169,7 +172,7 @@ void update_led_based_on_velocity(double velocity_left, double velocity_right)
 // This function calculates joints positions given the current velocity commands.
 void execute_commands_and_update_robot_state()
 {
-  taskENTER_CRITICAL(&my_spinlock); // Begin critical section
+  taskENTER_CRITICAL(&my_spinlock);  // Begin critical section
 
   current_time_ms = get_milliseconds();
   double dt = (double)(current_time_ms - last_update_time_ms) / 1000.0;
@@ -191,8 +194,8 @@ void execute_commands_and_update_robot_state()
       desired_position[i] += 2.0 * M_PI;
     }
   }
-  
-  taskEXIT_CRITICAL(&my_spinlock); // End of the critical section
+
+  taskEXIT_CRITICAL(&my_spinlock);  // End of the critical section
 }
 
 void joint_state_callback(uint8_t * rx_data, size_t data_len)
@@ -228,17 +231,17 @@ void joint_state_callback(uint8_t * rx_data, size_t data_len)
   }
 }
 
-static void publish_joint_state(void *pvParameters)
+static void publish_joint_state(void * pvParameters)
 {
   const double efforts[] = {0.5, 0, 0.2};
   const char * const names[] = {
     "wbot_wheel_left_joint", "wbot_wheel_right_joint", "arbitrary_made_up_joint"};
-  while(true)
+  while (true)
   {
-    taskENTER_CRITICAL(&my_spinlock); // Begin critical section
+    taskENTER_CRITICAL(&my_spinlock);  // Begin critical section
     double positions[] = {desired_position[0], desired_position[1], 1};
     double velocities[] = {cmd_vel[0], cmd_vel[1], cmd_vel[2]};
-    taskEXIT_CRITICAL(&my_spinlock); // End of the critical section
+    taskEXIT_CRITICAL(&my_spinlock);  // End of the critical section
 
     z_clock_t now = z_clock_now();
     ros_JointState joint_state = {
@@ -264,7 +267,7 @@ static void publish_joint_state(void *pvParameters)
     {
       ESP_LOGI(node.name, "JointState message serialization error.");
     }
-    vTaskDelay(pdMS_TO_TICKS(10));// Publish at ~100Hz
+    vTaskDelay(pdMS_TO_TICKS(10));  // Publish at ~100Hz
   }
 }
 
@@ -282,28 +285,30 @@ void initialize_desired_positions()
 extern "C" void app_main(void)
 {
   led_strip_init();
-  set_led_color(0, 0, 0); // Turn off LED at start
-  blink_rgb(200, 165, 0, 1000); // Blink orange to signal start of app_main
+  set_led_color(0, 0, 0);        // Turn off LED at start
+  blink_rgb(200, 165, 0, 1000);  // Blink orange to signal start of app_main
 
-  //Initialize NVS
+  // Initialize NVS
   esp_err_t ret = nvs_flash_init();
-  if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+  if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND)
+  {
     ESP_ERROR_CHECK(nvs_flash_erase());
     ret = nvs_flash_init();
   }
   ESP_ERROR_CHECK(ret);
 
-  set_led_color(0, 0, 255); // Solid blue to signal NVS init complete
+  set_led_color(0, 0, 255);  // Solid blue to signal NVS init complete
   vTaskDelay(pdMS_TO_TICKS(1000));
-  set_led_color(255, 0, 0); // Switch to solid red to signal start of RMW init
+  set_led_color(255, 0, 0);  // Switch to solid red to signal start of RMW init
 
-   // Initialize Pico ROS interface
+  // Initialize Pico ROS interface
   picoros_interface_t ifx = {
     .mode = MODE,
     .locator = ROUTER_ADDRESS,
   };
 
-  ESP_LOGI(node.name, "Starting pico-ros interface:[%s] on router address:[%s]\n", ifx.mode, ifx.locator);
+  ESP_LOGI(
+    node.name, "Starting pico-ros interface:[%s] on router address:[%s]\n", ifx.mode, ifx.locator);
   while (picoros_interface_init(&ifx) == PICOROS_NOT_READY)
   {
     printf("Waiting RMW init...\n");
