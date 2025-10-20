@@ -33,9 +33,6 @@ services:
       # Allows graphical programs in the container
       - DISPLAY=${DISPLAY}
     volumes:
-      # Mount the source into the workspace to sync the container and host
-      - ./wbot_description:/root/workshop_ws/src/wbot_description:rw
-      - ./wbot_bringup:/root/workshop_ws/src/wbot_bringup:rw
       # Allow access to host hardware e.g. micro-controllers
       - /dev:/dev
       # Allows graphical programs in the container
