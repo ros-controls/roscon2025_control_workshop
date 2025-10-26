@@ -75,6 +75,7 @@ ros2 control list_hardware_interfaces
      ```
      usb 3-4: FTDI USB Serial Device converter now attached to ttyUSB0
      ```
+   - Then edit the alias in the your `~/.bashrc` file within the container and re-source it.
 3. Go to the container now, `rc`, and `z` should start up the zenoh daemon with serial device support.
 In case you have a different device path than `/dev/ttyACM0`, override it by running
 ```bash
