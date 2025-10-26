@@ -25,6 +25,6 @@ jobs:
       - uses: docker/build-push-action@v6
         with:
           context: zenoh_host
-          push: false
+          push: true
           file: zenoh_host/docker/Dockerfile
           tags: ghcr.io/${{ github.repository_owner }}/roscon2025_control_workshop
