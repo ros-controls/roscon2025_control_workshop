@@ -70,6 +70,12 @@ ros2 control list_hardware_interfaces
 
 1. Take your ESP32 and plug a data-capable USB-C cable into the port labeled "COM" (see on the back).
 2. Verify that the device shows up on your laptop. Open a new terminal and run `ls /dev/ttyACM*` or `ls /dev/ttyUSB*`. We have an alias in the container expecting `/dev/ttyACM0` but we can override it.
+   - One of the best ways to know where your devices in mapped when connected to PC is to use `sudo dmesg -w` on your host system.
+   - Then look for the line similar to:
+     ```
+     usb 3-4: FTDI USB Serial Device converter now attached to ttyUSB0
+     ```
+   - Then edit the alias in the your `~/.bashrc` file within the container and re-source it.
 3. Go to the container now, `rc`, and `z` should start up the zenoh daemon with serial device support.
 In case you have a different device path than `/dev/ttyACM0`, override it by running
 ```bash
