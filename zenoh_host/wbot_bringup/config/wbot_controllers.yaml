@@ -5,10 +5,11 @@ controller_manager:
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
 
+    diff_drive_base_controller:
+      type: diff_drive_controller/DiffDriveController
+
 diff_drive_base_controller:
   ros__parameters:
-    type: diff_drive_controller/DiffDriveController
-
     left_wheel_names: ["wbot_wheel_left_joint"]
     right_wheel_names: ["wbot_wheel_right_joint"]
 
